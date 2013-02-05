@@ -27,7 +27,7 @@ import org.apache.maven.plugin.MojoFailureException;
 public class DependencyHaxeMojo extends AbstractHaxeMojo {
 
     public static final String ZIP = "zip";
-    public static final String TGZ = "tgz";
+    public static final String TGZ = "tar.gz";
 
     /**
      * Haxe version
