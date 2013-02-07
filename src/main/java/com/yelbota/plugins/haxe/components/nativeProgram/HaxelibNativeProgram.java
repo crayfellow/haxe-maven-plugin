@@ -17,12 +17,47 @@ package com.yelbota.plugins.haxe.components.nativeProgram;
 
 import org.codehaus.plexus.component.annotations.Component;
 
+import org.apache.maven.artifact.Artifact;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-@Component(role = NativeProgram.class, hint = "haxelib")
+@Component(role = HaxelibNativeProgram.class, hint = "haxelib")
 public final class HaxelibNativeProgram extends AbstractNativeProgram {
+	private File localRepositoryPath;
+
+	@Override
+    public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path)
+    {
+    	super.initialize(artifact, outputDirectory, pluginHome, path);
+    	setupHaxelib();
+    }
+
+    public File getLocalRepositoryPath()
+    {
+    	return this.localRepositoryPath;
+    }
+
+    private void setupHaxelib()
+    {
+        try
+        {
+           this.localRepositoryPath = new File(pluginHome, "_haxelib");
+
+            if (!this.localRepositoryPath.exists())
+            {
+                // Setup local repository path
+                execute("setup", this.localRepositoryPath.getAbsolutePath());
+            }
+        }
+        catch (NativeProgramException e)
+        {
+
+            //throw new Exception("Cant setup haxelib", e);
+        }
+    }
 
     @Override
     protected List<String> updateArguments(List<String> arguments)

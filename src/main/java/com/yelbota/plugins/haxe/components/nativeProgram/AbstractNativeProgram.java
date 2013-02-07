@@ -201,19 +201,43 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         }
     }
 
+    public Set<String> getPath()
+    {
+        return path;
+    }
+
+    public String getInstalledPath()
+    {
+        return this.directory.getAbsolutePath();
+    }
+
+    public boolean getInitialized()
+    {
+        return initialized;
+    }
+
+    protected File getUnpackDirectoryForArtifact(Artifact artifact) throws NativeProgramException
+    {
+        return new File(pluginHome, getUniqueArtifactPath());
+    }
+
+    private String getUniqueArtifactPath()
+    {
+        return artifact.getArtifactId() + "-" + artifact.getVersion();
+    }
+
     private File getDirectory(Artifact artifact) throws Exception
     {
-        File unpackDirectory = new File(pluginHome, artifact.getArtifactId() + "-" + artifact.getVersion());
+        File unpackDirectory = getUnpackDirectoryForArtifact(artifact);
 
         if (!unpackDirectory.exists())
         {
-            File tmpDir = new File(outputDirectory, unpackDirectory.getName() + "-unpack");
+            File tmpDir = new File(outputDirectory, getUniqueArtifactPath() + "-unpack");
 
             if (tmpDir.exists())
                 tmpDir.delete();
 
-            UnpackHelper unpackHelper = new UnpackHelper() {
-            };
+            UnpackHelper unpackHelper = new UnpackHelper() {};
             DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
             unpackHelper.unpack(tmpDir, artifact, unpackMethods, null);
 
@@ -223,6 +247,9 @@ public abstract class AbstractNativeProgram implements NativeProgram {
                 firstFile.renameTo(unpackDirectory);
                 break;
             }
+
+            if (tmpDir.exists())
+                tmpDir.delete();
         }
 
         String directoryPath = unpackDirectory.getAbsolutePath();
