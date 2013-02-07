@@ -80,41 +80,10 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     protected List<String> updateArguments(List<String> arguments)
     {
         List<String> list = new ArrayList<String>();
-        /*File executable = new File(neko.getInstalledPath(), isWindows() ? "neko.exe" : "neko");
-        list.add(executable.getAbsolutePath());
-        //list.add("run");
-        //list.add("nme");
-        list.add(directory + "/run.n");
-        list.add("display");
-        list.add("/Users/patrick/dev/zx/ZebraX.nmml");
-        list.add("flash");
-        list.add("/Users/patrick/dev/zx/");*/
-
-        /*try
-        {
-        	haxelib.execute("dev", "nme", directory.getAbsolutePath());
-        }
-        catch (NativeProgramException e)
-        {
-            System.out.println("bummer");
-        }*/
 
 		File executable = new File(neko.getInstalledPath(), isWindows() ? "neko.exe" : "neko");
         list.add(executable.getAbsolutePath());
         list.add(getInstalledPath() + "/run.n");
-        list.add("display");
-        list.add("/Users/patrick/dev/zx/ZebraX.nmml");
-        list.add("flash");
-        list.add("/Users/patrick/dev/zx/");
-
-        /* File executable = new File(haxelib.getInstalledPath(), isWindows() ? "haxelib.exe" : "haxelib");
-        list.add(executable.getAbsolutePath());
-        list.add("run");
-        list.add("nme");
-        list.add("test");
-        list.add("/Users/patrick/dev/zx/ZebraX.nmml");
-        list.add("flash");*/
-
         list.addAll(arguments);
 
         return list;

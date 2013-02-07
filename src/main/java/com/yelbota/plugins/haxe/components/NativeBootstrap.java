@@ -157,17 +157,6 @@ public class NativeBootstrap {
                 new ArtifactRepositoryPolicy(false, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE),
                 new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_NEVER, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE)
         ));
-
-        if (nme != null && nme.getInitialized()) {
-            try
-            {
-                nme.execute("");
-            }
-            catch (NativeProgramException e)
-            {
-                throw new Exception("Can't test nme: ", e);
-            }
-        }
     }
 
     @NotNull
