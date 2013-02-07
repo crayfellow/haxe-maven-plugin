@@ -15,7 +15,7 @@
  */
 package com.yelbota.plugins.haxe.components.repository;
 
-import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
+import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
@@ -34,7 +34,7 @@ public class HaxelibRepositoryConnectorFactory implements RepositoryConnectorFac
     private RepositoryConnectorFactory defaultRepositoryConnectorFactory;
 
     @Requirement(hint = "haxelib")
-    private NativeProgram haxelib;
+    private HaxelibNativeProgram haxelib;
 
     @Requirement
     private Logger logger;

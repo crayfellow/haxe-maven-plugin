@@ -16,6 +16,7 @@
 package com.yelbota.plugins.haxe.components;
 
 import com.sun.istack.internal.NotNull;
+import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 import org.apache.maven.artifact.Artifact;
@@ -54,7 +55,10 @@ public class NativeBootstrap {
     private NativeProgram neko;
 
     @Requirement(hint = "haxelib")
-    private NativeProgram haxelib;
+    private HaxelibNativeProgram haxelib;
+
+    @Requirement(hint = "nme")
+    private NativeProgram nme;
 
     //-------------------------------------------------------------------------
     //
@@ -96,31 +100,6 @@ public class NativeBootstrap {
     //
     //-------------------------------------------------------------------------
 
-    private void initializeHaxelib(File pluginHome) throws Exception
-    {
-        try
-        {
-            File haxelibHome = new File(pluginHome, "_haxelib");
-
-            if (!haxelibHome.exists())
-            {
-                // Setup haxelib
-                haxelib.execute("setup", haxelibHome.getAbsolutePath());
-            }
-        }
-        catch (NativeProgramException e)
-        {
-            throw new Exception("Cant setup haxelib", e);
-        }
-
-        // Add haxelib virtual repository.
-        project.getRemoteArtifactRepositories().add(new MavenArtifactRepository("lib.haxe.org", "http://lib.haxe.org",
-                new HaxelibRepositoryLayout(),
-                new ArtifactRepositoryPolicy(false, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE),
-                new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_NEVER, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE)
-        ));
-    }
-
     private void initializePrograms(File pluginHome, List<Dependency> pluginDependencies) throws Exception
     {
         Map<String, Artifact> artifactsMap = new HashMap<String, Artifact>();
@@ -134,7 +113,9 @@ public class NativeBootstrap {
         {
             String artifactKey = dependency.getGroupId() + ":" + dependency.getArtifactId();
 
-            if (artifactKey.equals(HAXE_COMPILER_KEY) || artifactKey.equals(NEKO_KEY))
+            if (artifactKey.equals(HAXE_COMPILER_KEY) 
+                || artifactKey.equals(NEKO_KEY)
+                || artifactKey.equals(NME_KEY))
             {
                 String classifier = getDefaultClassifier();
                 Artifact artifact = resolveArtifact(repositorySystem.createArtifactWithClassifier(
@@ -145,13 +126,6 @@ public class NativeBootstrap {
             }
         }
 
-        if (artifactsMap.get(HAXE_COMPILER_KEY) == null)
-        {
-            throw new Exception(String.format(
-                    "Haxe Compile dependency (%s) not fount in haxe-maven-plugin dependencies",
-                    HAXE_COMPILER_KEY));
-        }
-
         if (artifactsMap.get(NEKO_KEY) == null)
         {
             throw new Exception(String.format(
@@ -159,9 +133,41 @@ public class NativeBootstrap {
                     NEKO_KEY));
         }
 
+        if (artifactsMap.get(HAXE_COMPILER_KEY) == null)
+        {
+            throw new Exception(String.format(
+                    "Haxe Compile dependency (%s) not fount in haxe-maven-plugin dependencies",
+                    HAXE_COMPILER_KEY));
+        }
+
+        neko.initialize(artifactsMap.get(NEKO_KEY), outputDirectory, pluginHome, path);
         haxe.initialize(artifactsMap.get(HAXE_COMPILER_KEY), outputDirectory, pluginHome, path);
         haxelib.initialize(artifactsMap.get(HAXE_COMPILER_KEY), outputDirectory, pluginHome, path);
-        neko.initialize(artifactsMap.get(NEKO_KEY), outputDirectory, pluginHome, path);
+        if (artifactsMap.get(NME_KEY) != null) {
+            nme.initialize(artifactsMap.get(NME_KEY), outputDirectory, pluginHome, path);
+        }
+    }
+    
+    private void initializeHaxelib(File pluginHome) throws Exception
+    {
+        // Add haxelib virtual repository.
+        project.getRemoteArtifactRepositories().add(
+                new MavenArtifactRepository("lib.haxe.org", "http://lib.haxe.org",
+                new HaxelibRepositoryLayout(),
+                new ArtifactRepositoryPolicy(false, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE),
+                new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_NEVER, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE)
+        ));
+
+        if (nme != null && nme.getInitialized()) {
+            try
+            {
+                nme.execute("");
+            }
+            catch (NativeProgramException e)
+            {
+                throw new Exception("Can't test nme: ", e);
+            }
+        }
     }
 
     @NotNull
@@ -258,6 +264,7 @@ public class NativeBootstrap {
     private static final String OS_CLASSIFIER_LINUX = "linux";
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
+    private static final String NME_KEY = "org.haxenme:nme";
 
     private class HaxelibRepositoryLayout extends DefaultRepositoryLayout {
 
