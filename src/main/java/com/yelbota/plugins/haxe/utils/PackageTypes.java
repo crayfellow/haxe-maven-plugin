@@ -15,11 +15,9 @@
  */
 package com.yelbota.plugins.haxe.utils;
 
-public class HaxeFileExtensions {
+public class PackageTypes {
 
-    public static final String HAXELIB = "haxelib";
-    public static final String POM_HAXELIB = "pom-haxelib";
-    public static final String JAR = "jar";
-    public static final String HAR = "har";
-    public static final String NEKO = "n";
+    public static final String ZIP = "zip";
+    public static final String TGZ = "tgz";
+    public static final String TARGZ = "tar.gz";
 }

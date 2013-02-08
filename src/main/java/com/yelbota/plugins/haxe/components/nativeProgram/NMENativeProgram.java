@@ -41,18 +41,22 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     @Requirement(hint = "haxelib")
     private HaxelibNativeProgram haxelib;
 
+    private boolean needsSet = false;
+
     @Override
     public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path)
     {
 		super.initialize(artifact, outputDirectory, pluginHome, path);
 
-		try
-        {
-        	haxelib.execute("set", "nme", artifact.getVersion());
-        }
-        catch (NativeProgramException e)
-        {
-            System.out.println("bummer");
+        if (needsSet) {
+    		try
+            {
+            	haxelib.execute("set", artifact.getArtifactId(), artifact.getVersion());
+            }
+            catch (NativeProgramException e)
+            {
+                System.out.println("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.");
+            }
         }
 	}
 
@@ -67,13 +71,13 @@ public final class NMENativeProgram extends AbstractNativeProgram {
 		File currentFile = new File(nmeHaxelibHome, ".current");
 		if (!currentFile.exists()) {
 			try {
+                needsSet = true;
 				currentFile.createNewFile();
             } catch (IOException e) {
            		throw new NativeProgramException("Unable to create pointer for NME haxelib.", e);
             }
 		}
-        File soPath = new File(nmeHaxelibHome, artifact.getVersion().replace(".", ","));
-        return soPath;
+        return new File(nmeHaxelibHome, artifact.getVersion().replace(".", ","));
     }
 
     @Override

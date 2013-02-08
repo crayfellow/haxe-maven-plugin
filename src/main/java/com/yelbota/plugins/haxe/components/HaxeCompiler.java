@@ -86,7 +86,8 @@ public final class HaxeCompiler {
     {
         for (Artifact artifact : project.getArtifacts())
         {
-            if (artifact.getType().equals(HaxeFileExtensions.HAXELIB))
+            if (artifact.getType().equals(HaxeFileExtensions.HAXELIB)
+                || artifact.getType().equals(HaxeFileExtensions.POM_HAXELIB))
             {
                 String haxelibId = artifact.getArtifactId() + ":" + artifact.getVersion();
                 argumentsList.add("-lib");

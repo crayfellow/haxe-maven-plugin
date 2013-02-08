@@ -16,6 +16,7 @@
 package com.yelbota.plugins.haxe.components;
 
 import com.sun.istack.internal.NotNull;
+import com.yelbota.plugins.haxe.utils.PackageTypes;
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
@@ -118,9 +119,11 @@ public class NativeBootstrap {
                 || artifactKey.equals(NME_KEY))
             {
                 String classifier = getDefaultClassifier();
+                String packaging = getSDKArtifactPackaging(classifier);
+                if (artifactKey.equals(NME_KEY)) classifier = null;
                 Artifact artifact = resolveArtifact(repositorySystem.createArtifactWithClassifier(
                         dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(),
-                        getSDKArtifactPackaging(classifier), classifier
+                        packaging, classifier
                 ));
                 artifactsMap.put(artifactKey, artifact);
             }
@@ -180,10 +183,10 @@ public class NativeBootstrap {
     {
         if (classifier.equals(OS_CLASSIFIER_WINDOWS))
         {
-            return ZIP;
+            return PackageTypes.ZIP;
         } else
         {
-            return TGZ;
+            return PackageTypes.TGZ;
         }
     }
 
@@ -225,10 +228,10 @@ public class NativeBootstrap {
 
         if (!resolutionResult.isSuccess())
         {
-            if (artifact.getType().equals(TGZ)) {
+            if (artifact.getType().equals(PackageTypes.TGZ)) {
                 artifact = repositorySystem.createArtifactWithClassifier(
                         artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-                        TARGZ, artifact.getClassifier());
+                        PackageTypes.TARGZ, artifact.getClassifier());
                 request = new ArtifactResolutionRequest();
                 request.setArtifact(artifact);
                 request.setLocalRepository(localRepository);
@@ -245,9 +248,6 @@ public class NativeBootstrap {
         return artifact;
     }
 
-    private static final String ZIP = "zip";
-    private static final String TGZ = "tgz";
-    private static final String TARGZ = "tar.gz";
     private static final String OS_CLASSIFIER_MAC = "mac";
     private static final String OS_CLASSIFIER_WINDOWS = "windows";
     private static final String OS_CLASSIFIER_LINUX = "linux";
