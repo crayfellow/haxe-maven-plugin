@@ -17,6 +17,7 @@ package com.yelbota.plugins.haxe.components;
 
 import com.sun.istack.internal.NotNull;
 import com.yelbota.plugins.haxe.utils.PackageTypes;
+import com.yelbota.plugins.haxe.utils.OSClassifiers;
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
@@ -118,8 +119,8 @@ public class NativeBootstrap {
                 || artifactKey.equals(NEKO_KEY)
                 || artifactKey.equals(NME_KEY))
             {
-                String classifier = getDefaultClassifier();
-                String packaging = getSDKArtifactPackaging(classifier);
+                String classifier = OSClassifiers.getDefaultClassifier();
+                String packaging = PackageTypes.getSDKArtifactPackaging(classifier);
                 if (artifactKey.equals(NME_KEY)) classifier = null;
                 Artifact artifact = resolveArtifact(repositorySystem.createArtifactWithClassifier(
                         dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(),
@@ -179,44 +180,6 @@ public class NativeBootstrap {
     }
 
     @NotNull
-    private String getSDKArtifactPackaging(String classifier)
-    {
-        if (classifier.equals(OS_CLASSIFIER_WINDOWS))
-        {
-            return PackageTypes.ZIP;
-        } else
-        {
-            return PackageTypes.TGZ;
-        }
-    }
-
-    @NotNull
-    private String getDefaultClassifier() throws Exception
-    {
-        String systemName = System.getProperty("os.name");
-        String preparedName = systemName.toLowerCase();
-
-        if (preparedName.indexOf("win") > -1)
-        {
-            return OS_CLASSIFIER_WINDOWS;
-        } else if (preparedName.indexOf("lin") > -1)
-        {
-            String arch = System.getProperty("os.arch");
-            if (arch.indexOf("64") > -1)
-            {
-                return OS_CLASSIFIER_LINUX + "64";
-            }
-            return OS_CLASSIFIER_LINUX;
-        } else if (preparedName.indexOf("mac") > -1)
-        {
-            return OS_CLASSIFIER_MAC;
-        } else
-        {
-            throw new Exception(systemName + " is not supported");
-        }
-    }
-
-    @NotNull
     private Artifact resolveArtifact(Artifact artifact) throws Exception
     {
         ArtifactResolutionRequest request = new ArtifactResolutionRequest();
@@ -248,9 +211,6 @@ public class NativeBootstrap {
         return artifact;
     }
 
-    private static final String OS_CLASSIFIER_MAC = "mac";
-    private static final String OS_CLASSIFIER_WINDOWS = "windows";
-    private static final String OS_CLASSIFIER_LINUX = "linux";
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
     private static final String NME_KEY = "org.haxenme:nme";

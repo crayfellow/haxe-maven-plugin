@@ -16,6 +16,7 @@
 package com.yelbota.plugins.haxe.components.repository;
 
 import com.yelbota.plugins.haxe.utils.PackageTypes;
+import com.yelbota.plugins.haxe.utils.OSClassifiers;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
@@ -36,10 +37,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.io.File;
 
 public class HaxelibRepositoryConnector implements RepositoryConnector {
 
@@ -160,67 +160,94 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
             logger.info("Resolving hybrid POM/haxelib '"+artifact.getArtifactId()+"'");
             if (artifact.getExtension().equals(HaxeFileExtensions.POM_HAXELIB))
             {
-                artifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), PackageTypes.TARGZ, artifact.getVersion());
-                artifactDownload.setArtifact(artifact);
+                String classifier = null;
+                try {
+                    classifier = OSClassifiers.getDefaultClassifier();
+                }
+                catch (Exception e)
+                {
+                    logger.error(String.format("Can't get default classifier, using default package type (%s): %s", 
+                        PackageTypes.DEFAULT, e));
+                }
+                String packageType = classifier != null ? PackageTypes.getSDKArtifactPackaging(classifier) : PackageTypes.DEFAULT;
 
-                File artifactFile = artifactDownload.getFile();
-                String packagePath = artifactFile.getAbsolutePath().replace(HaxeFileExtensions.POM_HAXELIB, PackageTypes.TARGZ);
-                artifactDownload.setFile(new File(packagePath));
+                int resolveResult = resolvePomHaxelib(artifactDownload, packageType);
+                if (resolveResult != 0 && packageType == PackageTypes.TGZ) {
+                    resolveResult = resolvePomHaxelib(artifactDownload, PackageTypes.TARGZ);
+                }
 
-                File unpackDirectory = getUnpackDirectoryForArtifact(artifact);
-                File testFile = artifactDownload.getFile();
-
-                if (!testFile.exists() || !unpackDirectory.exists()) {
-                    ArrayList<ArtifactDownload> artifacts = new ArrayList<ArtifactDownload>();
-                    artifacts.add(artifactDownload);
-                    defaultRepositoryConnector.get(artifacts, null);
-
-                    ArtifactTransferException exception = artifactDownload.getException();
-                    if (exception == null) {
-                        artifactFile = artifactDownload.getFile();
-
-                        File tmpDir = new File(artifactFile.getParentFile(), artifact.getArtifactId() + "-unpack");
-
-                        if (tmpDir.exists())
-                            tmpDir.delete();
-
-                        UnpackHelper unpackHelper = new UnpackHelper() {};
-                        DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
-                        try {
-                            unpackHelper.unpack(tmpDir, artifactDownload, unpackMethods, null);
-                        }
-                        catch (Exception e)
-                        {
-                            logger.error(String.format("Can't unpack %s", artifact.getArtifactId(), e));
-                        }
-
-                        for (String firstFileName : tmpDir.list())
-                        {
-                            File firstFile = new File(tmpDir, firstFileName);
-                            firstFile.renameTo(unpackDirectory);
-                            break;
-                        }
-
-                        if (tmpDir.exists())
-                            tmpDir.delete();
-
-                        if (needsSet) {
-                            try
-                            {
-                                haxelib.execute("set", artifact.getArtifactId(), artifact.getVersion());
-                            }
-                            catch (NativeProgramException e)
-                            {
-                                logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.", e);
-                                // todo: throw exception
-                            }
-                        }
-                    } else {
-                        logger.error("Unable to resolve " + HaxeFileExtensions.POM_HAXELIB + " artifact: " + artifact);
-                    }
+                if (resolveResult != 0) {
+                    logger.error("Unable to resolve " + HaxeFileExtensions.POM_HAXELIB + " artifact: " + artifact);
                 }
             }
         }
+    }
+
+    private int resolvePomHaxelib(ArtifactDownload artifactDownload, String packageType)
+    {
+        Artifact artifact = artifactDownload.getArtifact();
+        artifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), packageType, artifact.getVersion());
+        artifactDownload.setArtifact(artifact);
+
+        File artifactFile = artifactDownload.getFile();
+        String packagePath = artifactFile.getAbsolutePath().replace(HaxeFileExtensions.POM_HAXELIB, packageType);
+        artifactDownload.setFile(new File(packagePath));
+
+        File unpackDirectory = getUnpackDirectoryForArtifact(artifact);
+        File testFile = artifactDownload.getFile();
+
+        if (!testFile.exists() || !unpackDirectory.exists()) {
+            ArrayList<ArtifactDownload> artifacts = new ArrayList<ArtifactDownload>();
+            artifacts.add(artifactDownload);
+            defaultRepositoryConnector.get(artifacts, null);
+
+            ArtifactTransferException exception = artifactDownload.getException();
+            if (exception == null) {
+                artifactFile = artifactDownload.getFile();
+
+                File tmpDir = new File(artifactFile.getParentFile(), artifact.getArtifactId() + "-unpack");
+
+                if (tmpDir.exists())
+                    tmpDir.delete();
+
+                UnpackHelper unpackHelper = new UnpackHelper() {};
+                DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
+                try {
+                    unpackHelper.unpack(tmpDir, artifactDownload, unpackMethods, null);
+                }
+                catch (Exception e)
+                {
+                    logger.error(String.format("Can't unpack %s", artifact.getArtifactId(), e));
+                }
+
+                for (String firstFileName : tmpDir.list())
+                {
+                    File firstFile = new File(tmpDir, firstFileName);
+                    firstFile.renameTo(unpackDirectory);
+                    break;
+                }
+
+                if (tmpDir.exists())
+                    tmpDir.delete();
+
+                if (needsSet) {
+                    try
+                    {
+                        haxelib.execute("set", artifact.getArtifactId(), artifact.getVersion());
+                        return 0;
+                    }
+                    catch (NativeProgramException e)
+                    {
+                        logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.", e);
+                        return 1;
+                    }
+                }
+            } else {
+                logger.debug("Unable to resolve " + HaxeFileExtensions.POM_HAXELIB + " artifact: " + artifact);
+                return 1;
+            }
+        }
+        return 0;
     }
     
     private File getUnpackDirectoryForArtifact(Artifact artifact)

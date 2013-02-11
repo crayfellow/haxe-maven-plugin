@@ -15,9 +15,24 @@
  */
 package com.yelbota.plugins.haxe.utils;
 
+import com.sun.istack.internal.NotNull;
+
 public class PackageTypes {
 
     public static final String ZIP = "zip";
     public static final String TGZ = "tgz";
     public static final String TARGZ = "tar.gz";
+    public static final String DEFAULT = ZIP;
+
+    @NotNull
+    public static final String getSDKArtifactPackaging(String classifier)
+    {
+        if (classifier.equals(OSClassifiers.WINDOWS))
+        {
+            return PackageTypes.ZIP;
+        } else
+        {
+            return PackageTypes.TGZ;
+        }
+    }
 }
