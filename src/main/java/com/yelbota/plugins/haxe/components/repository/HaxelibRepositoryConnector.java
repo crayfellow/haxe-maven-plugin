@@ -16,6 +16,7 @@
 package com.yelbota.plugins.haxe.components.repository;
 
 import com.yelbota.plugins.haxe.utils.PackageTypes;
+import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.utils.OSClassifiers;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
@@ -38,8 +39,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.io.File;
+import java.io.FileWriter;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class HaxelibRepositoryConnector implements RepositoryConnector {
 
@@ -103,8 +106,8 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
             // Get normal artifacts
             defaultRepositoryConnector.get(normalArtifacts, metadataDownloads);
 
-            getHaxelibs(haxelibArtifacts);
             getPomHaxelibs(pomHaxelibArtifacts);
+            getHaxelibs(haxelibArtifacts);
         }
     }
 
@@ -113,40 +116,76 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         for (ArtifactDownload artifactDownload : haxelibArtifacts)
         {
             Artifact artifact = artifactDownload.getArtifact();
-            logger.info("Resolving " + artifact);
-            if (artifact.getExtension().equals(HaxeFileExtensions.HAXELIB))
-            {
-                try
-                {
-                    int code = haxelib.execute(
-                            "install",
-                            artifact.getArtifactId(),
-                            artifact.getVersion()
-                    );
+            String pomPath = artifactDownload.getFile().getAbsolutePath().replace(
+                artifact.getExtension(), "pom");
+            File artifactFile = new File(pomPath);
 
-                    if (code > 0)
+            // once a custom dependency resolver is in place this will be unnecessary
+            if (!artifactFile.exists()) {
+                logger.info("Resolving " + artifact);
+                if (artifact.getExtension().equals(HaxeFileExtensions.HAXELIB))
+                {
+                    try
+                    {
+                        int code;
+                        if (artifact.getVersion() == null || artifact.getVersion() == "") {
+                            code = haxelib.execute(
+                                "install",
+                                artifact.getArtifactId()
+                            );
+                        } else {
+                            code = haxelib.execute(
+                                "install",
+                                artifact.getArtifactId(),
+                                artifact.getVersion()
+                            );
+                        }
+
+                        if (code > 0)
+                        {
+                            artifactDownload.setException(new ArtifactTransferException(
+                                    artifact, repository, "Can't resolve artifact " + artifact.toString()));
+                        }
+                        else
+                        {
+                            // TODO Need custom dependency resolver so enforcer does not bother
+                            // checking for poms for these dependencies which originate from
+                            // haxelib repository.
+                            if (!artifactFile.exists()) {
+                                try
+                                {
+                                    artifactFile.createNewFile();
+
+                                    FileWriter fileWriter = new FileWriter(artifactFile);
+                                    String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                                        "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
+                                        "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                                        "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">" +
+                                        "  <modelVersion>4.0.0</modelVersion>" +
+                                        "" +
+                                        "  <groupId>org.haxe.lib</groupId>" +
+                                        "  <artifactId>lib</artifactId>" +
+                                        "  <version>1.0</version>" +
+                                        "" +
+                                        "  <packaging>pom</packaging>" +
+                                        "" +
+                                        "  <name>lib</name>" +
+                                        "</project>";
+                                    fileWriter.write(content);
+                                    fileWriter.close();
+                                }
+                                catch (IOException e)
+                                {
+                                    logger.error("Can't create haxelib dummy artifact", e);
+                                }
+                            }
+                        }
+                    }
+                    catch (NativeProgramException e)
                     {
                         artifactDownload.setException(new ArtifactTransferException(
-                                artifact, repository, "Can't resolve artifact " + artifact.toString()));
+                                artifact, repository, e));
                     }
-                    else
-                    {
-                        try
-                        {
-                            // TODO In this case we can had a problems with new version of plugin.
-                            // TODO Need custom dependency resolver.
-                            artifactDownload.getFile().createNewFile();
-                        }
-                        catch (IOException e)
-                        {
-                            logger.error("Can't create haxelib dummy artifact", e);
-                        }
-                    }
-                }
-                catch (NativeProgramException e)
-                {
-                    artifactDownload.setException(new ArtifactTransferException(
-                            artifact, repository, e));
                 }
             }
         }
@@ -190,10 +229,10 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         artifactDownload.setArtifact(artifact);
 
         File artifactFile = artifactDownload.getFile();
-        String packagePath = artifactFile.getAbsolutePath().replace(HaxeFileExtensions.POM_HAXELIB, packageType);
+        String packagePath = artifactFile.getAbsolutePath().replace(artifact.getExtension(), packageType);
         artifactDownload.setFile(new File(packagePath));
 
-        File unpackDirectory = getUnpackDirectoryForArtifact(artifact);
+        File unpackDirectory = getHaxelibDirectoryForArtifact(artifact);
         File testFile = artifactDownload.getFile();
 
         if (!testFile.exists() || !unpackDirectory.exists()) {
@@ -249,18 +288,14 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         }
         return 0;
     }
-    
-    private File getUnpackDirectoryForArtifact(Artifact artifact)
-    {
-        File unpackDirectory = artifact.getFile();
-        HaxelibNativeProgram haxelibNativeProgram = (HaxelibNativeProgram) haxelib;
-        if (haxelibNativeProgram != null) {
-            File haxelibHome = new File(haxelibNativeProgram.getLocalRepositoryPath(), artifact.getArtifactId());
-            if (!haxelibHome.exists()) {
-                haxelibHome.mkdirs();
-            }
 
-            File currentFile = new File(haxelibHome, ".current");
+    private File getHaxelibDirectoryForArtifact(Artifact artifact)
+    {
+        HaxelibNativeProgram haxelibNativeProgram = (HaxelibNativeProgram) haxelib;
+        File haxelibDirectory = null;
+        if (haxelibNativeProgram != null) {
+            haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifact, haxelibNativeProgram);
+            File currentFile = new File(haxelibDirectory.getParentFile(), ".current");
             if (!currentFile.exists()) {
                 try {
                     needsSet = true;
@@ -270,9 +305,8 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                     // todo: throw exception
                 }
             }
-            unpackDirectory = new File(haxelibHome, artifact.getVersion().replace(".", ","));
         }
-        return unpackDirectory;
+        return haxelibDirectory;
     }
 
     @Override

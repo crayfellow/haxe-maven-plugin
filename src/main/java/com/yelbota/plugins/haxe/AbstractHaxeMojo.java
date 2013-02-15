@@ -47,11 +47,16 @@ public abstract class AbstractHaxeMojo extends AbstractMojo {
         try
         {
             outputDirectory = new File(project.getBuild().getDirectory());
-            bootstrap.initialize(project, localRepository);
+            initialize(project, localRepository);
         }
         catch (Exception e)
         {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    protected void initialize(MavenProject project, ArtifactRepository localRepository) throws Exception
+    {
+        bootstrap.initialize(project, localRepository);
     }
 }

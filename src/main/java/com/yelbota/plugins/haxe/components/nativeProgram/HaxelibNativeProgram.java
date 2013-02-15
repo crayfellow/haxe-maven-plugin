@@ -54,7 +54,6 @@ public final class HaxelibNativeProgram extends AbstractNativeProgram {
         }
         catch (NativeProgramException e)
         {
-
             //throw new Exception("Cant setup haxelib", e);
         }
     }

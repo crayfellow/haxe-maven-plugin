@@ -15,6 +15,7 @@
  */
 package com.yelbota.plugins.haxe;
 
+import com.yelbota.plugins.haxe.components.NMECompiler;
 import com.yelbota.plugins.haxe.utils.CompileTarget;
 import com.yelbota.plugins.haxe.utils.HarMetadata;
 import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
@@ -24,7 +25,13 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.Component;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -34,6 +41,13 @@ import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Set;
 
+
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+import org.xml.sax.*;
+import org.w3c.dom.*;
 
 /**
  * Builds a `har` package. This is a zip archive which
@@ -49,9 +63,20 @@ public class CompileHarMojo extends AbstractCompileMojo {
     @Parameter(required = true)
     private Set<CompileTarget> targets;
 
+    @Parameter
+    protected String nmml;
+
+    @Component
+    protected NMECompiler nmeCompiler;
+
+    @Component(hint = HaxeFileExtensions.HAXELIB)
+    protected ArtifactHandler haxelibHandler;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+        System.out.println("executing compileHar");
+
         super.execute();
 
         try
@@ -79,6 +104,57 @@ public class CompileHarMojo extends AbstractCompileMojo {
         {
             throw new MojoFailureException("Har validation failed", e);
         }
+    }
+
+    @Override
+    protected void initialize(MavenProject project, ArtifactRepository localRepository) throws Exception
+    {
+        if (nmml != null) {
+            File nmmlFile = new File(outputDirectory.getParentFile(), nmml);
+            if (nmmlFile.exists()) {
+                Document dom;
+                // Make an  instance of the DocumentBuilderFactory
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                try {
+                    // use the factory to take an instance of the document builder
+                    DocumentBuilder db = dbf.newDocumentBuilder();
+                    // parse using the builder to get the DOM mapping of the    
+                    // XML file
+                    dom = db.parse(nmmlFile.getAbsolutePath());
+
+                    Element doc = dom.getDocumentElement();
+
+                    NodeList nl = doc.getElementsByTagName("haxelib");
+                    String haxelibName;
+                    String haxelibVersion;
+                    if (nl.getLength() > 0) {
+                        Set<Artifact> dependencies = project.getDependencyArtifacts();
+
+                        for (int i = 0; i < nl.getLength(); i++) {
+                            haxelibVersion = "";
+                            Node node = nl.item(i);
+                            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                                Element element = (Element) node;
+                                haxelibName = element.getAttribute("name");
+                                if (element.hasAttribute("version")) haxelibVersion = element.getAttribute("version");
+                                Artifact artifact = new DefaultArtifact("org.haxe.lib", haxelibName, haxelibVersion, Artifact.SCOPE_COMPILE, "haxelib", "", haxelibHandler);
+                                
+                                dependencies.add(artifact);
+                            }
+                        }
+                    }
+                } catch (ParserConfigurationException pce) {
+                    System.out.println(pce.getMessage());
+                } catch (SAXException se) {
+                    System.out.println(se.getMessage());
+                } catch (IOException ioe) {
+                    System.err.println(ioe.getMessage());
+                }
+            } else {
+                nmml = null;
+            }
+        }
+        super.initialize(project, localRepository);
     }
 
     private File createHarMetadata(File outputBase) throws Exception
@@ -123,7 +199,10 @@ public class CompileHarMojo extends AbstractCompileMojo {
 
             compileTargets.put(target, outputFile.getAbsolutePath());
         }
-
-        compiler.compile(project, compileTargets, main, debug, false);
+        if (nmml == null) {
+            compiler.compile(project, compileTargets, main, debug, false);
+        } else {
+            nmeCompiler.compile(project, compileTargets, main, debug, false);
+        }
     }
 }

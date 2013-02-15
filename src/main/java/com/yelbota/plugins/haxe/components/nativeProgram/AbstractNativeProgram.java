@@ -105,7 +105,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         {
             String[] environment = getEnvironment();
             arguments = updateArguments(arguments);
-            logger.debug("Executing: " + StringUtils.join(arguments.iterator(), " "));
+            logger.info("Executing: " + StringUtils.join(arguments.iterator(), " "));
 
             Process process = Runtime.getRuntime().exec(
                     arguments.toArray(new String[]{}),

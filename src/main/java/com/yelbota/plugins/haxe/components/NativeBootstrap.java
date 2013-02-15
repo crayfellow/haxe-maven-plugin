@@ -16,6 +16,8 @@
 package com.yelbota.plugins.haxe.components;
 
 import com.sun.istack.internal.NotNull;
+import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
+import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.utils.PackageTypes;
 import com.yelbota.plugins.haxe.utils.OSClassifiers;
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
@@ -144,10 +146,40 @@ public class NativeBootstrap {
                     HAXE_COMPILER_KEY));
         }
 
+
         neko.initialize(artifactsMap.get(NEKO_KEY), outputDirectory, pluginHome, path);
         haxe.initialize(artifactsMap.get(HAXE_COMPILER_KEY), outputDirectory, pluginHome, path);
         haxelib.initialize(artifactsMap.get(HAXE_COMPILER_KEY), outputDirectory, pluginHome, path);
+
+        Set<Artifact> projectDependencies = project.getDependencyArtifacts();
+        if (projectDependencies != null) {
+            Iterator<Artifact> iterator = projectDependencies.iterator();
+            while(iterator.hasNext()) {
+                Artifact a = iterator.next();
+                if (a.getType().equals(HaxeFileExtensions.HAXELIB)) {
+                    File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(a.getArtifactId(), a.getVersion(), haxelib);
+                    if (haxelibDirectory.exists()) {
+                        iterator.remove();
+                    }
+                }
+            }
+        }
+
         if (artifactsMap.get(NME_KEY) != null) {
+            //Set<Artifact> projectDependencies = project.getDependencyArtifacts();
+            if (projectDependencies != null) {
+                Iterator<Artifact> iterator = projectDependencies.iterator();
+                while(iterator.hasNext()) {
+                    Artifact a = iterator.next();
+                    if (a.getType().equals(HaxeFileExtensions.HAXELIB)
+                        && a.getArtifactId().equals("nme")
+                        && (a.getVersion() == null 
+                            || a.getVersion().equals("")
+                            || a.getVersion().equals(artifactsMap.get(NME_KEY).getVersion()))) {
+                        iterator.remove();
+                    }
+                }
+            }
             nme.initialize(artifactsMap.get(NME_KEY), outputDirectory, pluginHome, path);
         }
     }
