@@ -45,12 +45,51 @@ public final class NMECompiler {
 
     private File outputDirectory;
 
-    public void compile(MavenProject project, Map<CompileTarget, String> targets, String nmml, boolean debug, boolean includeTestSources) throws Exception
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources) throws Exception
     {
         compile(project, targets, nmml, debug, includeTestSources, null);
     }
 
-    public void compile(MavenProject project, Map<CompileTarget, String> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
     {
+        File nmmlFile = new File(nmml);
+        if (nmmlFile.exists()) {
+            String targetString = null;
+            for (CompileTarget target : targets)
+            {
+                switch (target)
+                {
+                    case flash:
+                        targetString = "flash";
+                        break;
+                    case html5:
+                        targetString = "html5";
+                        break;
+                    case ios:
+                        targetString = "ios";
+                        break;
+                    case android:
+                        targetString = "android";
+                        break;
+                    case cpp:
+                        targetString = "cpp";
+                        break;
+                }
+
+                if (targetString != null) {
+                    logger.info("Building using NME for target '"+targetString+"'.");
+                    List<String> list = new ArrayList<String>();
+                    list.add("test");
+                    list.add(nmml);
+                    list.add(targetString);
+                    //list.add(nmmlFile.getParentFile().getAbsolutePath());
+                    nme.execute(list, logger);
+                } else {
+                    throw new Exception("Encountered an unsupported target to pass to NME: " + target);
+                }
+            }
+        } else {
+            throw new Exception("Unable to build using NME. NMML file '" + nmml + "' does not exist.");
+        }
     }
 }

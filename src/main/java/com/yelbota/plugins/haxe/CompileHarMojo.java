@@ -75,8 +75,6 @@ public class CompileHarMojo extends AbstractCompileMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        System.out.println("executing compileHar");
-
         super.execute();
 
         try
@@ -112,6 +110,7 @@ public class CompileHarMojo extends AbstractCompileMojo {
         if (nmml != null) {
             File nmmlFile = new File(outputDirectory.getParentFile(), nmml);
             if (nmmlFile.exists()) {
+                nmml = nmmlFile.getAbsolutePath();
                 Document dom;
                 // Make an  instance of the DocumentBuilderFactory
                 DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -174,35 +173,34 @@ public class CompileHarMojo extends AbstractCompileMojo {
 
     private void validateTargets(File outputBase) throws Exception
     {
-        EnumMap<CompileTarget, String> compileTargets = new EnumMap<CompileTarget, String>(CompileTarget.class);
-
-        if (!outputBase.exists())
-            outputBase.mkdirs();
-
-        for (CompileTarget target : targets)
-        {
-            File outputFile = outputBase;
-
-            switch (target)
-            {
-                case java:
-                {
-                    outputFile = new File(outputBase, "java");
-                    break;
-                }
-                case neko:
-                {
-                    outputFile = new File(outputBase, "neko.n");
-                    break;
-                }
-            }
-
-            compileTargets.put(target, outputFile.getAbsolutePath());
-        }
         if (nmml == null) {
+            EnumMap<CompileTarget, String> compileTargets = new EnumMap<CompileTarget, String>(CompileTarget.class);
+
+            if (!outputBase.exists()) outputBase.mkdirs();
+
+            for (CompileTarget target : targets)
+            {
+                File outputFile = outputBase;
+
+                switch (target)
+                {
+                    case java:
+                    {
+                        outputFile = new File(outputBase, "java");
+                        break;
+                    }
+                    case neko:
+                    {
+                        outputFile = new File(outputBase, "neko.n");
+                        break;
+                    }
+                }
+
+                compileTargets.put(target, outputFile.getAbsolutePath());
+            }
             compiler.compile(project, compileTargets, main, debug, false);
         } else {
-            nmeCompiler.compile(project, compileTargets, main, debug, false);
+            nmeCompiler.compile(project, targets, nmml, debug, false);
         }
     }
 }

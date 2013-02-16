@@ -85,9 +85,18 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     {
         List<String> list = new ArrayList<String>();
 
-		File executable = new File(neko.getInstalledPath(), isWindows() ? "neko.exe" : "neko");
+        /*
+        // run NME neko bytefile directly using neko binary
+        File executable = new File(neko.getInstalledPath(), isWindows() ? "neko.exe" : "neko");
         list.add(executable.getAbsolutePath());
         list.add(getInstalledPath() + "/run.n");
+        list.addAll(arguments);*/
+
+        // run NME via haxelib
+        File executable = new File(haxelib.getInstalledPath(), isWindows() ? "haxelib.exe" : "haxelib");
+        list.add(executable.getAbsolutePath());
+        list.add("run");
+        list.add("nme");
         list.addAll(arguments);
 
         return list;
@@ -97,17 +106,13 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     protected String[] getEnvironment()
     {
     	String haxeHome = haxe.getInstalledPath();
-    	String haxeLibraryPath = haxeHome + "/std:.";
     	String nekoHome = neko.getInstalledPath();
     	String nmeHome = getInstalledPath();
-        path.add(haxeLibraryPath);
-
         String[] env = new String[]{
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,
+                "DYLD_LIBRARY_PATH=" + nekoHome,
                 "NMEPATH=" + nmeHome,
-                "HAXE_LIBRARY_PATH=" + haxeLibraryPath,
-                "LD_LIBRARY_PATH=" + nekoHome,
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };
