@@ -73,7 +73,11 @@ public class CleanStream extends Thread {
                         } else if (type == CleanStreamType.DEBUG) {
                             log.debug(line);
                         } else if (type == CleanStreamType.ERROR) {
-                            log.error(line);
+                            if (line.matches("(.*)[Ww]arning(.*)")) {
+                                log.warn(line);
+                            } else {
+                                log.error(line);
+                            }
                         }
                     }
                 }

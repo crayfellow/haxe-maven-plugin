@@ -48,6 +48,9 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     {
 		super.initialize(artifact, outputDirectory, pluginHome, path);
 
+        path.add("/bin");
+        path.add("/usr/bin");
+
         if (needsSet) {
     		try
             {
@@ -111,7 +114,7 @@ public final class NMENativeProgram extends AbstractNativeProgram {
         String[] env = new String[]{
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,
-                "DYLD_LIBRARY_PATH=" + nekoHome,
+                "DYLD_LIBRARY_PATH=" + ".:" + nekoHome,
                 "NMEPATH=" + nmeHome,
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
