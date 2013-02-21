@@ -82,6 +82,7 @@ public final class NMECompiler {
                     list.add("test");
                     list.add(nmml);
                     list.add(targetString);
+                    list.add("-DBUILD_DIR=" + this.outputDirectory.getAbsolutePath());
                     //list.add(nmmlFile.getParentFile().getAbsolutePath());
                     nme.execute(list, logger);
                 } else {
@@ -91,5 +92,10 @@ public final class NMECompiler {
         } else {
             throw new Exception("Unable to build using NME. NMML file '" + nmml + "' does not exist.");
         }
+    }
+
+    public void setOutputDirectory(File outputDirectory)
+    {
+        this.outputDirectory = outputDirectory;
     }
 }

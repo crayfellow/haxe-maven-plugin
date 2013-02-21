@@ -123,7 +123,9 @@ public class CompileHarMojo extends AbstractCompileMojo {
 
                     Element doc = dom.getDocumentElement();
 
-                    NodeList nl = doc.getElementsByTagName("haxelib");
+                    NodeList nl;
+
+                    nl = doc.getElementsByTagName("haxelib");
                     String haxelibName;
                     String haxelibVersion;
                     if (nl.getLength() > 0) {
@@ -173,10 +175,10 @@ public class CompileHarMojo extends AbstractCompileMojo {
 
     private void validateTargets(File outputBase) throws Exception
     {
+        if (!outputBase.exists()) outputBase.mkdirs();
+
         if (nmml == null) {
             EnumMap<CompileTarget, String> compileTargets = new EnumMap<CompileTarget, String>(CompileTarget.class);
-
-            if (!outputBase.exists()) outputBase.mkdirs();
 
             for (CompileTarget target : targets)
             {
@@ -200,6 +202,7 @@ public class CompileHarMojo extends AbstractCompileMojo {
             }
             compiler.compile(project, compileTargets, main, debug, false);
         } else {
+            nmeCompiler.setOutputDirectory(outputDirectory);
             nmeCompiler.compile(project, targets, nmml, debug, false);
         }
     }
