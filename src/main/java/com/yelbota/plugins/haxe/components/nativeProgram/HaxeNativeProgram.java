@@ -15,7 +15,9 @@
  */
 package com.yelbota.plugins.haxe.components.nativeProgram;
 
+import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,6 +25,9 @@ import java.util.List;
 
 @Component(role = NativeProgram.class, hint = "haxe", isolatedRealm = true)
 public final class HaxeNativeProgram extends AbstractNativeProgram {
+
+    @Requirement(hint = "neko")
+    private NativeProgram neko;
 
     @Override
     protected List<String> updateArguments(List<String> arguments)
@@ -33,6 +38,22 @@ public final class HaxeNativeProgram extends AbstractNativeProgram {
         list.addAll(arguments);
 
         return list;
+    }
+
+    @Override
+    protected String[] getEnvironment()
+    {
+    	String haxeHome = getInstalledPath();
+    	String nekoHome = neko.getInstalledPath();
+        String[] env = new String[]{
+                "HAXEPATH=" + haxeHome,
+                "NEKOPATH=" + nekoHome,
+                "DYLD_LIBRARY_PATH=" + nekoHome + ":.",
+                "HAXE_LIBRARY_PATH=" + haxeHome + "/std:.",
+                "PATH=" + StringUtils.join(path.iterator(), ":"),
+                "HOME=" + pluginHome.getAbsolutePath()
+        };
+        return env;
     }
 }
 

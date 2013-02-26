@@ -34,11 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Component(role = NMECompiler.class)
-public final class NMECompiler {
+@Component(role = MUnitCompiler.class)
+public final class MUnitCompiler {
 
-    @Requirement(hint = "nme")
-    private NativeProgram nme;
+    @Requirement(hint = "munit")
+    private NativeProgram munit;
 
     @Requirement
     private Logger logger;
@@ -52,54 +52,22 @@ public final class NMECompiler {
 
     public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
     {
-        File nmmlFile = new File(nmml);
-        if (nmmlFile.exists()) {
-            String targetString = null;
-            for (CompileTarget target : targets)
-            {
-                switch (target)
-                {
-                    case flash:
-                        targetString = "flash";
-                        break;
-                    case html5:
-                        targetString = "html5";
-                        break;
-                    case ios:
-                        targetString = "ios";
-                        break;
-                    case android:
-                        targetString = "android";
-                        break;
-                    case cpp:
-                        targetString = "cpp";
-                        break;
-                }
+        List<String> list;
 
-                if (targetString != null) {
-                    logger.info("Building using '" + nmmlFile.getName() + "' for target '"+targetString+"'.");
-                    List<String> list;
+        list = new ArrayList<String>();
+        list.add("test");
+        list.add("test.hxml");
+        list.add("test_src");
+        list.add("test_bin");
+        list.add("test_report");
+        //list.add("-coverage");
+        list.add("-result-exit-code");
+        munit.execute(list, logger);
+    }
 
-                    list = new ArrayList<String>();
-                    list.add("update");
-                    list.add(nmml);
-                    list.add(targetString);
-                    list.add("-DBUILD_DIR=" + this.outputDirectory.getAbsolutePath());
-                    nme.execute(list, logger);
-
-                    list = new ArrayList<String>();
-                    list.add("build");
-                    list.add(nmml);
-                    list.add(targetString);
-                    list.add("-DBUILD_DIR=" + this.outputDirectory.getAbsolutePath());
-                    nme.execute(list, logger);
-                } else {
-                    throw new Exception("Encountered an unsupported target to pass to NME: " + target);
-                }
-            }
-        } else {
-            throw new Exception("Unable to build using NME. NMML file '" + nmml + "' does not exist.");
-        }
+    public boolean getHasRequirements()
+    {
+        return munit != null && munit.getInitialized();
     }
 
     public void setOutputDirectory(File outputDirectory)

@@ -15,6 +15,8 @@
  */
 package com.yelbota.plugins.haxe.components.nativeProgram;
 
+import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
+import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.utils.CleanStream;
 import com.yelbota.plugins.nd.UnpackHelper;
 import com.yelbota.plugins.nd.utils.DefaultUnpackMethods;
@@ -23,6 +25,7 @@ import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,16 +85,17 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         this.pluginHome = pluginHome;
         this.path = path;
 
-        try
-        {
-            this.directory = getDirectory(artifact);
+        if (!artifact.getType().equals(HaxeFileExtensions.HAXELIB)) {
+            try
+            {
+                this.directory = getDirectory(artifact);
+            }
+            catch (Exception e)
+            {
+                logger.error(String.format("Can't unpack %s", artifact.getArtifactId(), e));
+            }
+            initialized = true;
         }
-        catch (Exception e)
-        {
-            logger.error(String.format("Can't unpack %s", artifact.getArtifactId(), e));
-        }
-
-        initialized = true;
     }
 
     public int execute(List<String> arguments) throws NativeProgramException
@@ -107,7 +111,9 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             arguments = updateArguments(arguments);
             logger.debug("Executing: " + StringUtils.join(arguments.iterator(), " "));
 
-            Process process = Runtime.getRuntime().exec(
+            Process process;
+
+            process = Runtime.getRuntime().exec(
                     arguments.toArray(new String[]{}),
                     environment,
                     outputDirectory
@@ -213,6 +219,15 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     public boolean getInitialized()
     {
+        if (!initialized) { 
+            if (artifact.getType().equals(HaxeFileExtensions.HAXELIB)) {
+                File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifact.getArtifactId(), artifact.getVersion());
+                if (haxelibDirectory != null || haxelibDirectory.exists()) {
+                    this.directory = haxelibDirectory;
+                    initialized = true;
+                }
+            }
+        }
         return initialized;
     }
 
@@ -244,7 +259,15 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             for (String firstFileName : tmpDir.list())
             {
                 File firstFile = new File(tmpDir, firstFileName);
+                //logger.info(" *** moving " + firstFile.getAbsolutePath() + " to " + unpackDirectory.getAbsolutePath());
+                //FileUtils.moveDirectory(firstFile, unpackDirectory);
                 firstFile.renameTo(unpackDirectory);
+                if (!unpackDirectory.exists()) {
+                    // manually move using shell call as last ditch
+                    Process process = Runtime.getRuntime().exec(
+                            "mv " + firstFile.getAbsolutePath() + " " + unpackDirectory.getAbsolutePath()
+                    );
+                }
                 break;
             }
 

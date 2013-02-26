@@ -16,6 +16,7 @@
 package com.yelbota.plugins.haxe.components.nativeProgram;
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,6 +34,19 @@ public final class NekoNativeProgram extends AbstractNativeProgram {
         list.addAll(arguments);
 
         return list;
+    }
+
+    @Override
+    protected String[] getEnvironment()
+    {
+    	String nekoHome = getInstalledPath();
+        String[] env = new String[]{
+                "NEKOPATH=" + nekoHome,
+                "DYLD_LIBRARY_PATH=" + nekoHome + ":.",
+                "PATH=" + StringUtils.join(path.iterator(), ":"),
+                "HOME=" + pluginHome.getAbsolutePath()
+        };
+        return env;
     }
 }
 

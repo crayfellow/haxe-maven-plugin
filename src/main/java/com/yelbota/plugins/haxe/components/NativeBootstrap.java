@@ -64,6 +64,9 @@ public class NativeBootstrap {
     @Requirement(hint = "nme")
     private NativeProgram nme;
 
+    @Requirement(hint = "munit")
+    private NativeProgram munit;
+
     //-------------------------------------------------------------------------
     //
     //  Fields
@@ -146,19 +149,25 @@ public class NativeBootstrap {
                     HAXE_COMPILER_KEY));
         }
 
-
         neko.initialize(artifactsMap.get(NEKO_KEY), outputDirectory, pluginHome, path);
         haxe.initialize(artifactsMap.get(HAXE_COMPILER_KEY), outputDirectory, pluginHome, path);
         haxelib.initialize(artifactsMap.get(HAXE_COMPILER_KEY), outputDirectory, pluginHome, path);
+        HaxelibHelper.setHaxelib(haxelib);
 
         Set<Artifact> projectDependencies = project.getDependencyArtifacts();
         if (projectDependencies != null) {
             Iterator<Artifact> iterator = projectDependencies.iterator();
             while(iterator.hasNext()) {
                 Artifact a = iterator.next();
+                String artifactKey = a.getGroupId() + ":" + a.getArtifactId();
                 if (a.getType().equals(HaxeFileExtensions.HAXELIB)) {
-                    File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(a.getArtifactId(), a.getVersion(), haxelib);
-                    if (haxelibDirectory.exists()) {
+                    File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(a.getArtifactId(), a.getVersion());
+
+                    if (artifactKey.equals(MUNIT_KEY)) {
+                        munit.initialize(a, outputDirectory, pluginHome, path);
+                    }
+
+                    if (haxelibDirectory != null && haxelibDirectory.exists()) {
                         iterator.remove();
                     }
                 }
@@ -166,7 +175,6 @@ public class NativeBootstrap {
         }
 
         if (artifactsMap.get(NME_KEY) != null) {
-            //Set<Artifact> projectDependencies = project.getDependencyArtifacts();
             if (projectDependencies != null) {
                 Iterator<Artifact> iterator = projectDependencies.iterator();
                 while(iterator.hasNext()) {
@@ -246,6 +254,7 @@ public class NativeBootstrap {
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
     private static final String NME_KEY = "org.haxenme:nme";
+    private static final String MUNIT_KEY = "org.haxe.lib:munit";
 
     private class HaxelibRepositoryLayout extends DefaultRepositoryLayout {
 

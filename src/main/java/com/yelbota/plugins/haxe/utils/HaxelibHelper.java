@@ -17,23 +17,33 @@ package com.yelbota.plugins.haxe.utils;
 
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
 import org.sonatype.aether.artifact.Artifact;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 import java.io.IOException;
 import java.io.File;
 
 public class HaxelibHelper {
     
-    public static final File getHaxelibDirectoryForArtifact(Artifact artifact, HaxelibNativeProgram haxelib)
+    private static HaxelibNativeProgram haxelib;
+
+    public static final File getHaxelibDirectoryForArtifact(Artifact artifact)
     {
-        return getHaxelibDirectoryForArtifact(artifact.getArtifactId(), artifact.getVersion(), haxelib);
+        return getHaxelibDirectoryForArtifact(artifact.getArtifactId(), artifact.getVersion());
     }
     
-    public static final File getHaxelibDirectoryForArtifact(String artifactId, String version, HaxelibNativeProgram haxelib)
+    public static final File getHaxelibDirectoryForArtifact(String artifactId, String version)
     {
-        File haxelibHome = new File(haxelib.getLocalRepositoryPath(), artifactId);
-        if (!haxelibHome.exists()) {
-            haxelibHome.mkdirs();
-        }
-        return new File(haxelibHome, version.replace(".", ","));
+        if (haxelib != null && haxelib.getInitialized()) {
+            File haxelibHome = new File(haxelib.getLocalRepositoryPath(), artifactId);
+            if (!haxelibHome.exists()) {
+                haxelibHome.mkdirs();
+            }
+            return new File(haxelibHome, version.replace(".", ","));
+        } else return null;
+    }
+
+    public static void setHaxelib(HaxelibNativeProgram haxelib)
+    {
+        HaxelibHelper.haxelib = haxelib;
     }
 }

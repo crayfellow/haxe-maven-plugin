@@ -15,14 +15,21 @@
  */
 package com.yelbota.plugins.haxe;
 
+import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
+import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
 import com.yelbota.plugins.haxe.components.HaxeCompiler;
+import com.yelbota.plugins.haxe.components.MUnitCompiler;
 import com.yelbota.plugins.haxe.utils.CompileTarget;
 import com.yelbota.plugins.haxe.utils.OutputNamesHelper;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
+import org.apache.maven.artifact.Artifact;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 import java.util.EnumMap;
+import java.util.Set;
+import java.util.Iterator;
 
 /**
  * Compile tests with `neko` compile target.
@@ -37,29 +44,48 @@ public class TestCompileMojo extends AbstractHaxeMojo {
     private String testRunner;
 
     @Component
-    private HaxeCompiler compiler;
+    private HaxeCompiler haxeCompiler;
+
+    @Component
+    private MUnitCompiler munitCompiler;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         super.execute();
 
-        if (testRunner == null || project.getTestCompileSourceRoots().size() == 0) {
-            getLog().info("No test sources to compile");
-            return;
-        }
+        if (munitCompiler.getHasRequirements()) {
+            getLog().info("Running tests using MassiveUnit.");
 
-        String output = OutputNamesHelper.getTestOutput(project);
-        EnumMap<CompileTarget, String> targets = new EnumMap<CompileTarget, String>(CompileTarget.class);
-        targets.put(CompileTarget.neko, output);
+            try
+            {
+                munitCompiler.setOutputDirectory(outputDirectory);
+                munitCompiler.compile(project, null, testRunner, true, true);
+            }
+            catch (Exception e)
+            {
+                throw new MojoFailureException("Tests compilation failed", e);
+            }
+        } else {
+            getLog().info("Running tests using standard Haxe unit testing.");
 
-        try
-        {
-            compiler.compile(project, targets, testRunner, true, true);
-        }
-        catch (Exception e)
-        {
-            throw new MojoFailureException("Tests compilation failed", e);
+            if (testRunner == null || project.getTestCompileSourceRoots().size() == 0) {
+                getLog().info("No test sources to compile");
+                return;
+            }
+
+            String output = OutputNamesHelper.getTestOutput(project);
+            EnumMap<CompileTarget, String> targets = new EnumMap<CompileTarget, String>(CompileTarget.class);
+            targets.put(CompileTarget.neko, output);
+
+            try
+            {
+                haxeCompiler.compile(project, targets, testRunner, true, true);
+            }
+            catch (Exception e)
+            {
+                throw new MojoFailureException("Tests compilation failed", e);
+            }
         }
     }
 }

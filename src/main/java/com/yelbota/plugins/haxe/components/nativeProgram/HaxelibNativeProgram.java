@@ -16,8 +16,10 @@
 package com.yelbota.plugins.haxe.components.nativeProgram;
 
 import org.codehaus.plexus.component.annotations.Component;
+import org.codehaus.plexus.component.annotations.Requirement;
 
 import org.apache.maven.artifact.Artifact;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,6 +29,12 @@ import java.util.Set;
 @Component(role = HaxelibNativeProgram.class, hint = "haxelib")
 public final class HaxelibNativeProgram extends AbstractNativeProgram {
 	private File localRepositoryPath;
+
+    @Requirement(hint = "haxe")
+    private NativeProgram haxe;
+
+    @Requirement(hint = "neko")
+    private NativeProgram neko;
 
 	@Override
     public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path)
@@ -54,6 +62,7 @@ public final class HaxelibNativeProgram extends AbstractNativeProgram {
         }
         catch (NativeProgramException e)
         {
+            logger.error("Can't setup haxelib: " + e);
             //throw new Exception("Cant setup haxelib", e);
         }
     }
@@ -67,6 +76,22 @@ public final class HaxelibNativeProgram extends AbstractNativeProgram {
         list.addAll(arguments);
 
         return list;
+    }
+
+    @Override
+    protected String[] getEnvironment()
+    {
+        String haxeHome = haxe.getInstalledPath();
+        String nekoHome = neko.getInstalledPath();
+        String nmeHome = getInstalledPath();
+        String[] env = new String[]{
+                "HAXEPATH=" + haxeHome,
+                "NEKOPATH=" + nekoHome,
+                "DYLD_LIBRARY_PATH=" + ".:" + nekoHome,
+                "PATH=" + StringUtils.join(path.iterator(), ":"),
+                "HOME=" + pluginHome.getAbsolutePath()
+        };
+        return env;
     }
 }
 

@@ -29,8 +29,8 @@ import java.util.Set;
 
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
-@Component(role = NativeProgram.class, hint = "nme")
-public final class NMENativeProgram extends AbstractNativeProgram {
+@Component(role = NativeProgram.class, hint = "munit")
+public final class MUnitNativeProgram extends AbstractNativeProgram {
 
     @Requirement(hint = "haxe")
     private NativeProgram haxe;
@@ -46,10 +46,10 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     @Override
     public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path)
     {
-		super.initialize(artifact, outputDirectory, pluginHome, path);
+		super.initialize(artifact, outputDirectory.getParentFile(), pluginHome, path);
 
-        path.add("/bin");
-        path.add("/usr/bin");
+        //path.add("/bin");
+        //path.add("/usr/bin");
 
         if (needsSet) {
     		try
@@ -63,58 +63,38 @@ public final class NMENativeProgram extends AbstractNativeProgram {
         }
 	}
 
+    /*
 	@Override
     protected File getUnpackDirectoryForArtifact(Artifact artifact) throws NativeProgramException
     {
-    	File nmeHaxelibHome = new File(haxelib.getLocalRepositoryPath(), artifact.getArtifactId());
-    	if (!nmeHaxelibHome.exists()) {
-			nmeHaxelibHome.mkdirs();
+    	File munitHaxelibHome = new File(haxelib.getLocalRepositoryPath(), artifact.getArtifactId());
+    	if (!munitHaxelibHome.exists()) {
+			munitHaxelibHome.mkdirs();
 		}
 
-		File currentFile = new File(nmeHaxelibHome, ".current");
+		File currentFile = new File(munitHaxelibHome, ".current");
 		if (!currentFile.exists()) {
 			try {
                 needsSet = true;
 				currentFile.createNewFile();
             } catch (IOException e) {
-           		throw new NativeProgramException("Unable to create pointer for NME haxelib.", e);
+           		throw new NativeProgramException("Unable to create pointer for MUnit haxelib.", e);
             }
 		}
-        return new File(nmeHaxelibHome, artifact.getVersion().replace(".", ","));
+        return new File(munitHaxelibHome, artifact.getVersion().replace(".", ","));
     }
+    */
 
     @Override
     protected List<String> updateArguments(List<String> arguments)
     {
         List<String> list = new ArrayList<String>();
 
-
-        Process process;
-
-        /*try
-        {
-            logger.info("Trying to adjust: /bin/chmod u+x " + neko.getInstalledPath() + "/neko");
-            process = Runtime.getRuntime().exec(
-                    "/bin/chmod u+x " + neko.getInstalledPath() + "/neko"
-            );
-        }
-        catch (Exception e)
-        {
-            System.out.println(e);
-        }*/
-
-        /*
-        // run NME neko bytefile directly using neko binary
-        File executable = new File(neko.getInstalledPath(), isWindows() ? "neko.exe" : "neko");
-        list.add(executable.getAbsolutePath());
-        list.add(getInstalledPath() + "/run.n");
-        list.addAll(arguments);*/
-
-        // run NME via haxelib
+        // run MUnit via haxelib
         File executable = new File(haxelib.getInstalledPath(), isWindows() ? "haxelib.exe" : "haxelib");
         list.add(executable.getAbsolutePath());
         list.add("run");
-        list.add("nme");
+        list.add("munit");
         list.addAll(arguments);
 
         return list;
@@ -126,7 +106,6 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     	String haxeHome = haxe.getInstalledPath();
     	String nekoHome = neko.getInstalledPath();
     	String nmeHome = getInstalledPath();
-        //"DYLD_LIBRARY_PATH=" + ".:" + nekoHome + ":" + nmeHome + "/ndll/Mac",
         String[] env = new String[]{
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,

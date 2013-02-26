@@ -294,7 +294,7 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         HaxelibNativeProgram haxelibNativeProgram = (HaxelibNativeProgram) haxelib;
         File haxelibDirectory = null;
         if (haxelibNativeProgram != null) {
-            haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifact, haxelibNativeProgram);
+            haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifact);
             File currentFile = new File(haxelibDirectory.getParentFile(), ".current");
             if (!currentFile.exists()) {
                 try {
