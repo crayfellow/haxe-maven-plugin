@@ -54,6 +54,8 @@ public final class MUnitCompiler {
     {
         List<String> list;
 
+        int returnValue;
+        
         list = new ArrayList<String>();
         list.add("test");
         list.add("test.hxml");
@@ -62,7 +64,11 @@ public final class MUnitCompiler {
         list.add("test_report");
         //list.add("-coverage");
         list.add("-result-exit-code");
-        munit.execute(list, logger);
+        returnValue = munit.execute(list, logger);
+
+        if (returnValue > 0) {
+            throw new Exception("MassiveUnit test encountered an error and cannot proceed.");
+        }
     }
 
     public boolean getHasRequirements()
