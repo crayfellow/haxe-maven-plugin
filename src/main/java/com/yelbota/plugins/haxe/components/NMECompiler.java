@@ -79,20 +79,29 @@ public final class NMECompiler {
                 if (targetString != null) {
                     logger.info("Building using '" + nmmlFile.getName() + "' for target '"+targetString+"'.");
                     List<String> list;
+                    int returnValue;
 
                     list = new ArrayList<String>();
                     list.add("update");
                     list.add(nmml);
                     list.add(targetString);
                     list.add("-DBUILD_DIR=" + this.outputDirectory.getAbsolutePath());
-                    nme.execute(list, logger);
+                    returnValue = nme.execute(list, logger);
+
+                    if (returnValue > 0) {
+                        throw new Exception("NME update encountered an error and cannot proceed.");
+                    }
 
                     list = new ArrayList<String>();
                     list.add("build");
                     list.add(nmml);
                     list.add(targetString);
                     list.add("-DBUILD_DIR=" + this.outputDirectory.getAbsolutePath());
-                    nme.execute(list, logger);
+                    returnValue = nme.execute(list, logger);
+
+                    if (returnValue > 0) {
+                        throw new Exception("NME build encountered an error and cannot proceed.");
+                    }
                 } else {
                     throw new Exception("Encountered an unsupported target to pass to NME: " + target);
                 }
