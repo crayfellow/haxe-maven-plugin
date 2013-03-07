@@ -29,8 +29,8 @@ import java.util.Set;
 
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
-@Component(role = NativeProgram.class, hint = "munit")
-public final class MUnitNativeProgram extends AbstractNativeProgram {
+@Component(role = NativeProgram.class, hint = "chxdoc")
+public final class ChxDocNativeProgram extends AbstractNativeProgram {
 
     @Requirement(hint = "haxe")
     private NativeProgram haxe;
@@ -46,10 +46,7 @@ public final class MUnitNativeProgram extends AbstractNativeProgram {
     @Override
     public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path)
     {
-		super.initialize(artifact, outputDirectory.getParentFile(), pluginHome, path);
-
-        //path.add("/bin");
-        //path.add("/usr/bin");
+		super.initialize(artifact, outputDirectory, pluginHome, path);
 
         if (needsSet) {
     		try
@@ -64,22 +61,39 @@ public final class MUnitNativeProgram extends AbstractNativeProgram {
 	}
 
     @Override
+    public boolean getInitialized()
+    {
+        boolean initialized = super.getInitialized();
+        if (initialized) { 
+            try
+            {
+                haxelib.execute("run", "chxdoc", "install", outputDirectory.getAbsolutePath());
+                this.directory = outputDirectory;
+                initialized = true;
+            }
+            catch (NativeProgramException e)
+            {
+                System.out.println("Unable to compile chxdoc. " + e);
+            }
+        }
+        return initialized;
+    }
+
+    @Override
+    protected String myName() { return "chxdoc"; }
+
+    @Override
     protected List<String> updateArguments(List<String> arguments)
     {
         List<String> list = new ArrayList<String>();
 
-        // run MUnit via haxelib
-        File executable = new File(haxelib.getInstalledPath(), isWindows() ? "haxelib.exe" : "haxelib");
+        // run ChxDoc
+        File executable = new File(this.directory.getAbsolutePath(), isWindows() ? "chxdoc.exe" : "chxdoc");
         list.add(executable.getAbsolutePath());
-        list.add("run");
-        list.add("munit");
         list.addAll(arguments);
 
         return list;
     }
-
-    @Override
-    protected String myName() { return "munit"; }
 
     @Override
     protected String[] getEnvironment()

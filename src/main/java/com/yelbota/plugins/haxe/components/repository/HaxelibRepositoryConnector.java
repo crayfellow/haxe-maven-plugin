@@ -235,7 +235,7 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         File unpackDirectory = getHaxelibDirectoryForArtifact(artifact);
         File testFile = artifactDownload.getFile();
 
-        if (!testFile.exists() || !unpackDirectory.exists()) {
+        //if (!testFile.exists() || !unpackDirectory.exists()) {
             ArrayList<ArtifactDownload> artifacts = new ArrayList<ArtifactDownload>();
             artifacts.add(artifactDownload);
             defaultRepositoryConnector.get(artifacts, null);
@@ -285,7 +285,7 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                 logger.debug("Unable to resolve " + HaxeFileExtensions.POM_HAXELIB + " artifact: " + artifact);
                 return 1;
             }
-        }
+        //}
         return 0;
     }
 

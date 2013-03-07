@@ -67,6 +67,9 @@ public class NativeBootstrap {
     @Requirement(hint = "munit")
     private NativeProgram munit;
 
+    @Requirement(hint = "chxdoc")
+    private NativeProgram chxdoc;
+
     //-------------------------------------------------------------------------
     //
     //  Fields
@@ -161,14 +164,22 @@ public class NativeBootstrap {
                 Artifact a = iterator.next();
                 String artifactKey = a.getGroupId() + ":" + a.getArtifactId();
                 if (a.getType().equals(HaxeFileExtensions.HAXELIB)) {
+                    
                     File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(a.getArtifactId(), a.getVersion());
-
-                    if (artifactKey.equals(MUNIT_KEY)) {
-                        munit.initialize(a, outputDirectory, pluginHome, path);
-                    }
 
                     if (haxelibDirectory != null && haxelibDirectory.exists()) {
                         iterator.remove();
+                    }
+                }
+                if (a.getType().equals(HaxeFileExtensions.HAXELIB)
+                        || a.getType().equals(HaxeFileExtensions.POM_HAXELIB)) {
+
+                    if (a.getArtifactId().equals(MUNIT_ID)) {
+                        munit.initialize(a, outputDirectory, pluginHome, path);
+                    }
+
+                    if (a.getArtifactId().equals(CHXDOC_ID)) {
+                        chxdoc.initialize(a, outputDirectory, pluginHome, path);
                     }
                 }
             }
@@ -254,7 +265,8 @@ public class NativeBootstrap {
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
     private static final String NME_KEY = "org.haxenme:nme";
-    private static final String MUNIT_KEY = "org.haxe.lib:munit";
+    private static final String MUNIT_ID = "munit";
+    private static final String CHXDOC_ID = "chxdoc";
 
     private class HaxelibRepositoryLayout extends DefaultRepositoryLayout {
 

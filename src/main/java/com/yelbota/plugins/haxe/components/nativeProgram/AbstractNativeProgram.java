@@ -85,7 +85,8 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         this.pluginHome = pluginHome;
         this.path = path;
 
-        if (!artifact.getType().equals(HaxeFileExtensions.HAXELIB)) {
+        if (!artifact.getType().equals(HaxeFileExtensions.HAXELIB)
+                && !artifact.getType().equals(HaxeFileExtensions.POM_HAXELIB)) {
             try
             {
                 this.directory = getDirectory(artifact);
@@ -188,12 +189,12 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         {
             CleanStream cleanError = new CleanStream(
                     process.getErrorStream(),
-                    outputLogger, CleanStream.CleanStreamType.ERROR
+                    outputLogger, CleanStream.CleanStreamType.ERROR, myName()
             );
 
             CleanStream cleanOutput = new CleanStream(
                     process.getInputStream(),
-                    outputLogger, CleanStream.CleanStreamType.INFO
+                    outputLogger, CleanStream.CleanStreamType.INFO, myName()
             );
 
             cleanError.start();
@@ -206,6 +207,8 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             throw new NativeProgramException("Program was interrupted", e);
         }
     }
+
+    protected String myName() { return "abstract"; }
 
     public Set<String> getPath()
     {
@@ -220,7 +223,9 @@ public abstract class AbstractNativeProgram implements NativeProgram {
     public boolean getInitialized()
     {
         if (!initialized) { 
-            if (artifact.getType().equals(HaxeFileExtensions.HAXELIB)) {
+            if (artifact != null 
+                    && (artifact.getType().equals(HaxeFileExtensions.HAXELIB)
+                        || artifact.getType().equals(HaxeFileExtensions.POM_HAXELIB))) {
                 File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifact.getArtifactId(), artifact.getVersion());
                 if (haxelibDirectory != null || haxelibDirectory.exists()) {
                     this.directory = haxelibDirectory;

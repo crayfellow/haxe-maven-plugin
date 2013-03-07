@@ -63,6 +63,9 @@ public final class NMENativeProgram extends AbstractNativeProgram {
         }
 	}
 
+    @Override
+    protected String myName() { return "nme"; }
+
 	@Override
     protected File getUnpackDirectoryForArtifact(Artifact artifact) throws NativeProgramException
     {
@@ -88,28 +91,6 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     {
         List<String> list = new ArrayList<String>();
 
-
-        Process process;
-
-        /*try
-        {
-            logger.info("Trying to adjust: /bin/chmod u+x " + neko.getInstalledPath() + "/neko");
-            process = Runtime.getRuntime().exec(
-                    "/bin/chmod u+x " + neko.getInstalledPath() + "/neko"
-            );
-        }
-        catch (Exception e)
-        {
-            System.out.println(e);
-        }*/
-
-        /*
-        // run NME neko bytefile directly using neko binary
-        File executable = new File(neko.getInstalledPath(), isWindows() ? "neko.exe" : "neko");
-        list.add(executable.getAbsolutePath());
-        list.add(getInstalledPath() + "/run.n");
-        list.addAll(arguments);*/
-
         // run NME via haxelib
         File executable = new File(haxelib.getInstalledPath(), isWindows() ? "haxelib.exe" : "haxelib");
         list.add(executable.getAbsolutePath());
@@ -126,7 +107,6 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     	String haxeHome = haxe.getInstalledPath();
     	String nekoHome = neko.getInstalledPath();
     	String nmeHome = getInstalledPath();
-        //"DYLD_LIBRARY_PATH=" + ".:" + nekoHome + ":" + nmeHome + "/ndll/Mac",
         String[] env = new String[]{
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,
@@ -136,6 +116,7 @@ public final class NMENativeProgram extends AbstractNativeProgram {
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };
+
         return env;
     }
 }

@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class CleanStream extends Thread {
-
+private String myname = "stream";
     public enum CleanStreamType {
         INFO, DEBUG, ERROR     
     }
@@ -48,6 +48,14 @@ public class CleanStream extends Thread {
         this.is = is;
         this.type = type;
         this.log = log;
+    }
+
+    public CleanStream(InputStream is, Logger log, CleanStreamType type, String myname)
+    {
+        this.is = is;
+        this.type = type;
+        this.log = log;
+        this.myname = myname;
     }
 
     public void run()
@@ -76,7 +84,7 @@ public class CleanStream extends Thread {
                             if (line.matches("(.*)[Ww]arning(.*)")) {
                                 log.warn(line);
                             } else {
-                                log.error(line);
+                                log.error("("+myname+") " + line);
                             }
                         }
                     }

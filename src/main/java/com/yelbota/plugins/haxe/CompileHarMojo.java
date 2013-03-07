@@ -40,7 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Set;
-
+import java.util.List;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
@@ -62,6 +62,9 @@ public class CompileHarMojo extends AbstractCompileMojo {
      */
     @Parameter(required = true)
     private Set<CompileTarget> targets;
+
+    @Parameter(required = false)
+    private List<String> compilerFlags;
 
     @Parameter
     protected String nmml;
@@ -200,10 +203,10 @@ public class CompileHarMojo extends AbstractCompileMojo {
 
                 compileTargets.put(target, outputFile.getAbsolutePath());
             }
-            compiler.compile(project, compileTargets, main, debug, false);
+            compiler.compile(project, compileTargets, main, debug, false, compilerFlags);
         } else {
             nmeCompiler.setOutputDirectory(outputDirectory);
-            nmeCompiler.compile(project, targets, nmml, debug, false);
+            nmeCompiler.compile(project, targets, nmml, debug, false, compilerFlags);
         }
     }
 }

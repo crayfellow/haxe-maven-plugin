@@ -62,7 +62,7 @@ public final class MUnitCompiler {
         list.add("test_src");
         list.add("test_bin");
         list.add("test_report");
-        //list.add("-coverage");
+        list.add("-coverage");
         list.add("-result-exit-code");
         returnValue = munit.execute(list, logger);
 

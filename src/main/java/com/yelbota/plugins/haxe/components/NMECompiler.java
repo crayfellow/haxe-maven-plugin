@@ -36,9 +36,13 @@ import java.util.Set;
 
 @Component(role = NMECompiler.class)
 public final class NMECompiler {
+    private static final String TYPES_FILE = "types.xml";
 
     @Requirement(hint = "nme")
     private NativeProgram nme;
+
+    @Requirement(hint = "chxdoc")
+    private NativeProgram chxdoc;
 
     @Requirement
     private Logger logger;
@@ -55,6 +59,11 @@ public final class NMECompiler {
         File nmmlFile = new File(nmml);
         if (nmmlFile.exists()) {
             String targetString = null;
+            List<String> list;
+            boolean chxdocIsValid = chxdoc != null && chxdoc.getInitialized();
+            boolean xmlGenerated = false;
+            String buildDir = this.outputDirectory.getAbsolutePath();
+
             for (CompileTarget target : targets)
             {
                 switch (target)
@@ -78,14 +87,26 @@ public final class NMECompiler {
 
                 if (targetString != null) {
                     logger.info("Building using '" + nmmlFile.getName() + "' for target '"+targetString+"'.");
-                    List<String> list;
                     int returnValue;
 
                     list = new ArrayList<String>();
                     list.add("update");
                     list.add(nmml);
                     list.add(targetString);
-                    list.add("-DBUILD_DIR=" + this.outputDirectory.getAbsolutePath());
+                    list.add("--app-path=" + buildDir);
+                    if (debug) {
+                        list.add("-debug");
+                        list.add("--haxeflag='-D log'");
+                    }
+
+                    if (additionalArguments != null) {
+                        List<String> compilerArgs = new ArrayList<String>();
+                        for (String arg : additionalArguments) {
+                            compilerArgs.add("--haxeflag='" + arg + "'");
+                        }
+                        list.addAll(compilerArgs);
+                    }
+
                     returnValue = nme.execute(list, logger);
 
                     if (returnValue > 0) {
@@ -96,7 +117,23 @@ public final class NMECompiler {
                     list.add("build");
                     list.add(nmml);
                     list.add(targetString);
-                    list.add("-DBUILD_DIR=" + this.outputDirectory.getAbsolutePath());
+                    list.add("--app-path=" + buildDir);
+                    if (chxdocIsValid && !xmlGenerated) {
+                        list.add("--haxeflag='-xml " + this.outputDirectory.getAbsolutePath() + "/" + TYPES_FILE + "'");
+                        xmlGenerated = true;
+                    }
+                    if (debug) {
+                        list.add("-debug");
+                        list.add("--haxeflag='-D log'");
+                    }
+
+                    if (additionalArguments != null) {
+                        List<String> compilerArgs = new ArrayList<String>();
+                        for (String arg : additionalArguments) {
+                            compilerArgs.add("--haxeflag='" + arg + "'");
+                        }
+                        list.addAll(compilerArgs);
+                    }
                     returnValue = nme.execute(list, logger);
 
                     if (returnValue > 0) {
@@ -105,6 +142,14 @@ public final class NMECompiler {
                 } else {
                     throw new Exception("Encountered an unsupported target to pass to NME: " + target);
                 }
+            }
+
+            if (chxdocIsValid && xmlGenerated) {
+                list = new ArrayList<String>();
+                list.add("--output=docs");
+                list.add("--title=Documentation");
+                list.add("--file=" + TYPES_FILE);
+                chxdoc.execute(list, logger);
             }
         } else {
             throw new Exception("Unable to build using NME. NMML file '" + nmml + "' does not exist.");
