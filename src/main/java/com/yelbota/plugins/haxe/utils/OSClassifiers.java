@@ -19,7 +19,7 @@ import com.sun.istack.internal.NotNull;
 
 public class OSClassifiers {
 
-    public static final String MAC = "mac";
+    public static final String OSX = "osx";
     public static final String WINDOWS = "windows";
     public static final String LINUX = "linux";
 
@@ -42,7 +42,7 @@ public class OSClassifiers {
             return LINUX;
         } else if (preparedName.indexOf("mac") > -1)
         {
-            return MAC;
+            return OSX;
         } else
         {
             throw new Exception(systemName + " is not supported");
