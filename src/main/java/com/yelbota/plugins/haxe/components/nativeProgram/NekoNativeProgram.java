@@ -43,6 +43,7 @@ public final class NekoNativeProgram extends AbstractNativeProgram {
         String[] env = new String[]{
                 "NEKOPATH=" + nekoHome,
                 "DYLD_LIBRARY_PATH=" + nekoHome + ":.",
+                "LD_LIBRARY_PATH=" + nekoHome + ":.",
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };

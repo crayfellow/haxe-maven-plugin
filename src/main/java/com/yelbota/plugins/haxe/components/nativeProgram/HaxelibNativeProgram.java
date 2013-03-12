@@ -88,7 +88,9 @@ public final class HaxelibNativeProgram extends AbstractNativeProgram {
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,
                 "DYLD_LIBRARY_PATH=" + ".:" + nekoHome,
+                "LD_LIBRARY_PATH=" + nekoHome + ":.",
                 "HAXE_LIBRARY_PATH=" + haxeHome + "/std:.",
+                "HAXE_STD_PATH=" + haxeHome + "/std:.",
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };
