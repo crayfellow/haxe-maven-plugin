@@ -143,8 +143,8 @@
 
     <scm>
         <url>https://github.com/crayfellow/haxe-maven-plugin</url>
-        <developerConnection>scm:git:github.com/crayfellow/haxe-maven-plugin.git</developerConnection>
-        <connection>scm:git:github.com/crayfellow/haxe-maven-plugin.git</connection>
+        <developerConnection>scm:git:https://github.com/crayfellow/haxe-maven-plugin.git</developerConnection>
+        <connection>scm:git:https://github.com/crayfellow/haxe-maven-plugin.git</connection>
     </scm>
 
     <repositories>
