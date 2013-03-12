@@ -151,6 +151,10 @@
         <id>releases</id>
         <url>${releases.url}</url>
       </repository>
+      <repository>
+        <id>snapshots</id>
+        <url>${snapshots.url}</url>
+      </repository>
     </repositories>
 
     <distributionManagement>
