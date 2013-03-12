@@ -6,7 +6,7 @@
     <groupId>com.yelbota.plugins</groupId>
     <artifactId>haxe-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
-    <version>1.0-beta-1</version>
+    <version>1.1-SNAPSHOT</version>
 
     <name>Maven plugin to build haXe projects</name>
 
@@ -14,6 +14,10 @@
         <developer>
             <name>Aleksey Fomkin</name>
             <email>aleksey.fomkin@gmail.com</email>
+        </developer>
+        <developer>
+            <name>crayfellow</name>
+            <email>elearningeek@gmail.com</email>
         </developer>
     </developers>
 
@@ -101,11 +105,6 @@
     </build>
 
     <dependencies>
-        <!--<dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.0</version>
-        </dependency>-->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -141,14 +140,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <distributionManagement>
-	<repository>
-            <!-- I know, I know! -->
-            <id>yelbota-dropbox-repository</id>
-            <url>file:///Users/yelbota/Dropbox/Public/maven</url>
-     	</repository>
-    </distributionManagement>
 
     <scm>
         <url>https://github.com/crayfellow/haxe-maven-plugin</url>
