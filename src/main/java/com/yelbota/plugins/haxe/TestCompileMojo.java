@@ -43,6 +43,12 @@ public class TestCompileMojo extends AbstractHaxeMojo {
     @Parameter
     private String testRunner;
 
+    /**
+     * Compile with verbose output
+     */
+    @Parameter
+    protected boolean verbose;
+
     @Component
     private HaxeCompiler haxeCompiler;
 
@@ -80,7 +86,7 @@ public class TestCompileMojo extends AbstractHaxeMojo {
 
             try
             {
-                haxeCompiler.compile(project, targets, testRunner, true, true);
+                haxeCompiler.compile(project, targets, testRunner, true, true, verbose);
             }
             catch (Exception e)
             {

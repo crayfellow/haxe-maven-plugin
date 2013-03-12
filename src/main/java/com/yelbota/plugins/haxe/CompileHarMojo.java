@@ -203,10 +203,10 @@ public class CompileHarMojo extends AbstractCompileMojo {
 
                 compileTargets.put(target, outputFile.getAbsolutePath());
             }
-            compiler.compile(project, compileTargets, main, debug, false, compilerFlags);
+            compiler.compile(project, compileTargets, main, debug, false, verbose, compilerFlags);
         } else {
             nmeCompiler.setOutputDirectory(outputDirectory);
-            nmeCompiler.compile(project, targets, nmml, debug, false, compilerFlags);
+            nmeCompiler.compile(project, targets, nmml, debug, false, verbose, compilerFlags);
         }
     }
 }

@@ -49,12 +49,12 @@ public final class NMECompiler {
 
     private File outputDirectory;
 
-    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources) throws Exception
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose) throws Exception
     {
-        compile(project, targets, nmml, debug, includeTestSources, null);
+        compile(project, targets, nmml, debug, includeTestSources, verbose, null);
     }
 
-    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose, List<String> additionalArguments) throws Exception
     {
         File nmmlFile = new File(nmml);
         if (nmmlFile.exists()) {
@@ -98,6 +98,9 @@ public final class NMECompiler {
                         list.add("-debug");
                         list.add("--haxeflag='-D log'");
                     }
+                    if (verbose) {
+                        list.add("-verbose");
+                    }
 
                     if (additionalArguments != null) {
                         List<String> compilerArgs = new ArrayList<String>();
@@ -125,6 +128,9 @@ public final class NMECompiler {
                     if (debug) {
                         list.add("-debug");
                         list.add("--haxeflag='-D log'");
+                    }
+                    if (verbose) {
+                        list.add("-verbose");
                     }
 
                     if (additionalArguments != null) {

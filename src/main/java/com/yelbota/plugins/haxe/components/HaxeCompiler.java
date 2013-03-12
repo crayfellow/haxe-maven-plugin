@@ -45,12 +45,12 @@ public final class HaxeCompiler {
 
     private File outputDirectory;
 
-    public void compile(MavenProject project, Map<CompileTarget, String> targets, String main, boolean debug, boolean includeTestSources) throws Exception
+    public void compile(MavenProject project, Map<CompileTarget, String> targets, String main, boolean debug, boolean includeTestSources, boolean verbose) throws Exception
     {
-        compile(project, targets, main, debug, includeTestSources, null);
+        compile(project, targets, main, debug, includeTestSources, verbose, null);
     }
 
-    public void compile(MavenProject project, Map<CompileTarget, String> targets, String main, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
+    public void compile(MavenProject project, Map<CompileTarget, String> targets, String main, boolean debug, boolean includeTestSources, boolean verbose, List<String> additionalArguments) throws Exception
     {
         List<String> args = new ArrayList<String>();
 

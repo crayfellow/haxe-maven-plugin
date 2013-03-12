@@ -48,7 +48,7 @@ public class CompileJavaMojo extends AbstractCompileMojo {
 
         try
         {
-            compiler.compile(project, targets, main, debug, false);
+            compiler.compile(project, targets, main, debug, false, verbose);
         }
         catch (Exception e)
         {

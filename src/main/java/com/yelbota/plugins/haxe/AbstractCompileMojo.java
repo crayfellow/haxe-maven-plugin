@@ -35,6 +35,12 @@ public abstract class AbstractCompileMojo extends AbstractHaxeMojo {
     @Parameter
     protected boolean debug;
 
+    /**
+     * Compile with verbose output
+     */
+    @Parameter
+    protected boolean verbose;
+
     @Component
     protected HaxeCompiler compiler;
 
