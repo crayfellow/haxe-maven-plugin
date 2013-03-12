@@ -15,7 +15,7 @@
  */
 package com.yelbota.plugins.haxe.utils;
 
-import com.sun.istack.internal.NotNull;
+import javax.annotation.Nonnull;
 
 public class OSClassifiers {
 
@@ -23,7 +23,7 @@ public class OSClassifiers {
     public static final String WINDOWS = "windows";
     public static final String LINUX = "linux";
 
-    @NotNull
+    @Nonnull
     public static final String getDefaultClassifier() throws Exception
     {
         String systemName = System.getProperty("os.name");

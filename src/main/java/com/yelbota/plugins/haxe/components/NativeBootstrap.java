@@ -15,7 +15,7 @@
  */
 package com.yelbota.plugins.haxe.components;
 
-import com.sun.istack.internal.NotNull;
+import javax.annotation.Nonnull;
 import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
 import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.utils.PackageTypes;
@@ -214,7 +214,7 @@ public class NativeBootstrap {
         ));
     }
 
-    @NotNull
+    @Nonnull
     private File getOutputDirectory()
     {
         File outputDirectory = new File(project.getBuild().getDirectory());
@@ -230,7 +230,7 @@ public class NativeBootstrap {
         return outputDirectory;
     }
 
-    @NotNull
+    @Nonnull
     private Artifact resolveArtifact(Artifact artifact) throws Exception
     {
         ArtifactResolutionRequest request = new ArtifactResolutionRequest();

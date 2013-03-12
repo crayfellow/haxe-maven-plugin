@@ -15,7 +15,7 @@
  */
 package com.yelbota.plugins.haxe.utils;
 
-import com.sun.istack.internal.NotNull;
+import javax.annotation.Nonnull;
 
 public class PackageTypes {
 
@@ -24,7 +24,7 @@ public class PackageTypes {
     public static final String TARGZ = "tar.gz";
     public static final String DEFAULT = ZIP;
 
-    @NotNull
+    @Nonnull
     public static final String getSDKArtifactPackaging(String classifier)
     {
         if (classifier.equals(OSClassifiers.WINDOWS))
