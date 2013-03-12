@@ -123,7 +123,7 @@
         <dependency>
             <groupId>com.yelbota.plugins</groupId>
             <artifactId>native-dependency-maven-plugin-base</artifactId>
-            <version>1.2-beta-1</version>
+            <version>1.2-SNAPSHOT</version>
         </dependency>
         <!-- JSR-305 annotations (@Nullable etc.) -->
         <dependency>
