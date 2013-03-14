@@ -85,18 +85,25 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         this.pluginHome = pluginHome;
         this.path = path;
 
-        if (!artifact.getType().equals(HaxeFileExtensions.HAXELIB)
-                && !artifact.getType().equals(HaxeFileExtensions.POM_HAXELIB)) {
+        if (!isHaxelibProgram()) {
             try
             {
                 this.directory = getDirectory(artifact);
             }
             catch (Exception e)
             {
-                logger.error(String.format("Can't unpack %s", artifact.getArtifactId(), e));
+                logger.error(String.format("Can't unpack %s: %s", artifact.getArtifactId(), e));
             }
             initialized = true;
         }
+    }
+
+    private boolean isHaxelibProgram()
+    {
+        return (artifact.getType().equals(HaxeFileExtensions.HAXELIB)
+                || (artifact.getClassifier() != null 
+                    && artifact.getClassifier().equals(HaxeFileExtensions.HAXELIB))
+                );
     }
 
     public int execute(List<String> arguments) throws NativeProgramException
@@ -223,9 +230,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
     public boolean getInitialized()
     {
         if (!initialized) { 
-            if (artifact != null 
-                    && (artifact.getType().equals(HaxeFileExtensions.HAXELIB)
-                        || artifact.getType().equals(HaxeFileExtensions.POM_HAXELIB))) {
+            if (artifact != null && isHaxelibProgram()) {
                 File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifact.getArtifactId(), artifact.getVersion());
                 if (haxelibDirectory != null || haxelibDirectory.exists()) {
                     this.directory = haxelibDirectory;
@@ -264,7 +269,6 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             for (String firstFileName : tmpDir.list())
             {
                 File firstFile = new File(tmpDir, firstFileName);
-                //logger.info(" *** moving " + firstFile.getAbsolutePath() + " to " + unpackDirectory.getAbsolutePath());
                 //FileUtils.moveDirectory(firstFile, unpackDirectory);
                 firstFile.renameTo(unpackDirectory);
                 if (!unpackDirectory.exists()) {

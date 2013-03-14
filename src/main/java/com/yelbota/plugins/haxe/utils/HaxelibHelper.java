@@ -16,21 +16,22 @@
 package com.yelbota.plugins.haxe.utils;
 
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
-import org.sonatype.aether.artifact.Artifact;
+import com.yelbota.plugins.nd.UnpackHelper;
+import com.yelbota.plugins.nd.utils.DefaultUnpackMethods;
+import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.Artifact;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 
 import java.io.IOException;
 import java.io.File;
 
 public class HaxelibHelper {
-    
+
     private static HaxelibNativeProgram haxelib;
 
-    public static final File getHaxelibDirectoryForArtifact(Artifact artifact)
-    {
-        return getHaxelibDirectoryForArtifact(artifact.getArtifactId(), artifact.getVersion());
-    }
-    
     public static final File getHaxelibDirectoryForArtifact(String artifactId, String version)
     {
         if (haxelib != null && haxelib.getInitialized()) {
@@ -38,8 +39,75 @@ public class HaxelibHelper {
             if (!haxelibHome.exists()) {
                 haxelibHome.mkdirs();
             }
-            return new File(haxelibHome, version.replace(".", ","));
+            return new File(haxelibHome, getCleanVersionForHaxelibArtifact(version).replace(".", ","));
         } else return null;
+    }
+
+    private static String getCleanVersionForHaxelibArtifact(String version)
+    {
+        return version.replaceAll("-(.*)$", "");
+    }
+
+    private static File getHaxelibDirectoryForArtifactAndInitialize(String artifactId, String version)
+    {
+        File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifactId, version);
+        if (haxelibDirectory != null) {
+            File currentFile = new File(haxelibDirectory.getParentFile(), ".current");
+            if (!currentFile.exists()) {
+                try {
+                    currentFile.createNewFile();
+                } catch (IOException e) {
+                    System.out.println("Unable to create pointer for '"+artifactId+"' haxelib: " + e);
+                    // todo: throw exception!!
+                }
+            }
+        }
+        return haxelibDirectory;
+    }
+
+    public static int injectPomHaxelib(Artifact artifact, File outputDirectory, Logger logger)
+    {
+        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
+        if (unpackDirectory.exists()) {
+            FileUtils.deleteQuietly(unpackDirectory);
+        }
+
+        File tmpDir = new File(outputDirectory, artifact.getArtifactId() + "-unpack");
+        if (tmpDir.exists()) {
+            FileUtils.deleteQuietly(tmpDir);
+        }
+
+        UnpackHelper unpackHelper = new UnpackHelper() {};
+        DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
+        try {
+            unpackHelper.unpack(tmpDir, artifact, unpackMethods, null);
+        }
+        catch (Exception e)
+        {
+            logger.error(String.format("Can't unpack %s: %s", artifact.getArtifactId(), e));
+        }
+
+        for (String firstFileName : tmpDir.list())
+        {
+            File firstFile = new File(tmpDir, firstFileName);
+            firstFile.renameTo(unpackDirectory);
+            break;
+        }
+
+        if (tmpDir.exists()) {
+            FileUtils.deleteQuietly(tmpDir);
+        }
+
+        try
+        {
+            haxelib.execute("set", artifact.getArtifactId(), getCleanVersionForHaxelibArtifact(artifact.getVersion()));
+        }
+        catch (NativeProgramException e)
+        {
+            logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.", e);
+            return 1;
+        }
+        return 0;
     }
 
     public static void setHaxelib(HaxelibNativeProgram haxelib)

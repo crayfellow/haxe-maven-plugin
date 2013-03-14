@@ -36,6 +36,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.codehaus.plexus.logging.Logger;
 
 import java.io.File;
 import java.util.*;
@@ -70,6 +71,9 @@ public class NativeBootstrap {
     @Requirement(hint = "chxdoc")
     private NativeProgram chxdoc;
 
+    @Requirement
+    private Logger logger;
+
     //-------------------------------------------------------------------------
     //
     //  Fields
@@ -93,7 +97,7 @@ public class NativeBootstrap {
 
         Map<String, Plugin> pluginMap = project.getBuild().getPluginsAsMap();
         Plugin plugin = pluginMap.get("com.yelbota.plugins:haxe-maven-plugin");
-        Artifact pluginArtifact = resolveArtifact(repositorySystem.createPluginArtifact(plugin));
+        Artifact pluginArtifact = resolveArtifact(repositorySystem.createPluginArtifact(plugin), false);
         String pluginHomeName = plugin.getArtifactId() + "-" + plugin.getVersion();
         File pluginHome = new File(pluginArtifact.getFile().getParentFile(), pluginHomeName);
 
@@ -133,7 +137,7 @@ public class NativeBootstrap {
                 Artifact artifact = resolveArtifact(repositorySystem.createArtifactWithClassifier(
                         dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(),
                         packaging, classifier
-                ));
+                ), false);
                 artifactsMap.put(artifactKey, artifact);
             }
         }
@@ -148,7 +152,7 @@ public class NativeBootstrap {
         if (artifactsMap.get(HAXE_COMPILER_KEY) == null)
         {
             throw new Exception(String.format(
-                    "Haxe Compile dependency (%s) not fount in haxe-maven-plugin dependencies",
+                    "Haxe Compiler dependency (%s) not fount in haxe-maven-plugin dependencies",
                     HAXE_COMPILER_KEY));
         }
 
@@ -162,25 +166,39 @@ public class NativeBootstrap {
             Iterator<Artifact> iterator = projectDependencies.iterator();
             while(iterator.hasNext()) {
                 Artifact a = iterator.next();
-                String artifactKey = a.getGroupId() + ":" + a.getArtifactId();
+
                 if (a.getType().equals(HaxeFileExtensions.HAXELIB)) {
-                    
                     File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(a.getArtifactId(), a.getVersion());
 
                     if (haxelibDirectory != null && haxelibDirectory.exists()) {
                         iterator.remove();
                     }
+                } else {
+                    if (a.getClassifier().equals("haxelib")) {
+                        String packaging = PackageTypes.getSDKArtifactPackaging(OSClassifiers.getDefaultClassifier());
+                        Artifact artifact = repositorySystem.createArtifactWithClassifier(
+                                a.getGroupId(), a.getArtifactId(), a.getVersion(),
+                                packaging, null
+                        );
+                        if (artifact == null || artifact.getFile() == null || !artifact.getFile().exists()) {
+                            Artifact resolvedArtifact = resolveArtifact(artifact, true);
+                            if (resolvedArtifact == null) {
+                                resolvedArtifact = resolveArtifact(artifact, false);
+                                if (resolvedArtifact != null) {
+                                    HaxelibHelper.injectPomHaxelib(resolvedArtifact, outputDirectory, logger);
+                                    iterator.remove();
+                                }
+                            }
+                        }
+                    }
                 }
-                if (a.getType().equals(HaxeFileExtensions.HAXELIB)
-                        || a.getType().equals(HaxeFileExtensions.POM_HAXELIB)) {
 
-                    if (a.getArtifactId().equals(MUNIT_ID)) {
-                        munit.initialize(a, outputDirectory, pluginHome, path);
-                    }
+                if (a.getArtifactId().equals(MUNIT_ID)) {
+                    munit.initialize(a, outputDirectory, pluginHome, path);
+                }
 
-                    if (a.getArtifactId().equals(CHXDOC_ID)) {
-                        chxdoc.initialize(a, outputDirectory, pluginHome, path);
-                    }
+                if (a.getArtifactId().equals(CHXDOC_ID)) {
+                    chxdoc.initialize(a, outputDirectory, pluginHome, path);
                 }
             }
         }
@@ -231,13 +249,15 @@ public class NativeBootstrap {
     }
 
     @Nonnull
-    private Artifact resolveArtifact(Artifact artifact) throws Exception
+    private Artifact resolveArtifact(Artifact artifact, boolean localOnly) throws Exception
     {
         ArtifactResolutionRequest request = new ArtifactResolutionRequest();
 
         request.setArtifact(artifact);
         request.setLocalRepository(localRepository);
-        request.setRemoteRepositories(project.getRemoteArtifactRepositories());
+        if (!localOnly) {
+            request.setRemoteRepositories(project.getRemoteArtifactRepositories());
+        }
         ArtifactResolutionResult resolutionResult = repositorySystem.resolve(request);
 
         if (!resolutionResult.isSuccess())
@@ -249,14 +269,20 @@ public class NativeBootstrap {
                 request = new ArtifactResolutionRequest();
                 request.setArtifact(artifact);
                 request.setLocalRepository(localRepository);
-                request.setRemoteRepositories(project.getRemoteArtifactRepositories());
+                if (!localOnly) {
+                    request.setRemoteRepositories(project.getRemoteArtifactRepositories());
+                }
                 resolutionResult = repositorySystem.resolve(request);
                 if (resolutionResult.isSuccess()) {
                     return artifact;
                 }
             }
-            String message = "Failed to resolve artifact " + artifact;
-            throw new Exception(message);
+            if (!localOnly) {
+                String message = "Failed to resolve artifact " + artifact;
+                throw new Exception(message);
+            } else {
+                artifact = null;
+            }
         }
 
         return artifact;

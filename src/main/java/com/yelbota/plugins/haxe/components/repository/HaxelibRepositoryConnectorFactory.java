@@ -44,7 +44,7 @@ public class HaxelibRepositoryConnectorFactory implements RepositoryConnectorFac
             NoRepositoryConnectorException
     {
         RepositoryConnector defaultRepositoryConnector = defaultRepositoryConnectorFactory.newInstance(session, repository);
-        return new HaxelibRepositoryConnector(repository, defaultRepositoryConnector, haxelib, logger);
+        return new HaxelibRepositoryConnector(repository, defaultRepositoryConnector, haxelib, logger, session);
     }
 
     @Override
