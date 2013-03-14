@@ -67,8 +67,9 @@ public class HaxelibHelper {
 
     public static int injectPomHaxelib(Artifact artifact, File outputDirectory, Logger logger, boolean resolvedLocally)
     {
-        if (!resolvedLocally) {
-            File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
+        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
+        if (!resolvedLocally
+                || resolvedLocally && !unpackDirectory.exists()) {
             if (unpackDirectory.exists()) {
                 FileUtils.deleteQuietly(unpackDirectory);
             }
@@ -108,9 +109,6 @@ public class HaxelibHelper {
                 logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.", e);
                 return 1;
             }
-        } else {
-            File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
-            logger.info("RESOLVED LOCALLY. VER=" + artifact.getVersion() + " exists? " + unpackDirectory.exists());
         }
         return 0;
     }

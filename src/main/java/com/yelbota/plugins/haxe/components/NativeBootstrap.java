@@ -182,12 +182,10 @@ public class NativeBootstrap {
                         );
                         Artifact resolvedArtifact = resolveArtifact(artifact, true);
                         boolean resolvedLocally = (resolvedArtifact != null);
-                        logger.info("tried local first: "+ resolvedLocally);
                         if (!resolvedLocally) {
                             resolvedArtifact = resolveArtifact(artifact, false);
                         }
                         if (resolvedArtifact != null) {
-                            logger.info("RESOLVED. but locally? "+ resolvedLocally);
                             HaxelibHelper.injectPomHaxelib(resolvedArtifact, outputDirectory, logger, resolvedLocally);
                             iterator.remove();
                         }
