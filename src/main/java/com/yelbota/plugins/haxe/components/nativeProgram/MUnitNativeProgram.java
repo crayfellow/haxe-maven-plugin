@@ -41,25 +41,18 @@ public final class MUnitNativeProgram extends AbstractNativeProgram {
     @Requirement(hint = "haxelib")
     private HaxelibNativeProgram haxelib;
 
-    private boolean needsSet = false;
-
     @Override
     public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path)
     {
 		super.initialize(artifact, outputDirectory.getParentFile(), pluginHome, path);
 
-        //path.add("/bin");
-        //path.add("/usr/bin");
-
-        if (needsSet) {
-    		try
-            {
-            	haxelib.execute("set", artifact.getArtifactId(), artifact.getVersion());
-            }
-            catch (NativeProgramException e)
-            {
-                System.out.println("Unable to set version for haxelib '"+artifact.getArtifactId()+"'. " + e);
-            }
+		try
+        {
+        	haxelib.execute("set", artifact.getArtifactId(), artifact.getVersion());
+        }
+        catch (NativeProgramException e)
+        {
+            System.out.println("Unable to set version for haxelib '"+artifact.getArtifactId()+"'. " + e);
         }
 	}
 

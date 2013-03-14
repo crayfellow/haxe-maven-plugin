@@ -55,7 +55,7 @@ public final class NMENativeProgram extends AbstractNativeProgram {
         }
         catch (NativeProgramException e)
         {
-            System.out.println("Unable to set version for haxelib '"+artifact.getArtifactId()+"'. " + e);
+            logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'. " + e);
         }
 	}
 

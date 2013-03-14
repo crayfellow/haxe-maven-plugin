@@ -134,11 +134,20 @@ public class NativeBootstrap {
                 String classifier = OSClassifiers.getDefaultClassifier();
                 String packaging = PackageTypes.getSDKArtifactPackaging(classifier);
                 if (artifactKey.equals(NME_KEY)) classifier = null;
-                Artifact artifact = resolveArtifact(repositorySystem.createArtifactWithClassifier(
+                Artifact artifact = repositorySystem.createArtifactWithClassifier(
                         dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(),
                         packaging, classifier
-                ), false);
-                artifactsMap.put(artifactKey, artifact);
+                );
+
+                Artifact resolvedArtifact = resolveArtifact(artifact, true);
+                boolean resolvedLocally = (resolvedArtifact != null);
+                if (!resolvedLocally) {
+                    resolvedArtifact = resolveArtifact(artifact, false);
+                }
+                if (resolvedArtifact != null) {
+                    logger.info("toolchain resolved '"+resolvedArtifact.getArtifactId()+"' with version '"+resolvedArtifact.getVersion()+"' locally: " + resolvedLocally);
+                    artifactsMap.put(artifactKey, resolvedArtifact);
+                }
             }
         }
 
