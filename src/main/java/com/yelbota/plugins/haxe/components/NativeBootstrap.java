@@ -195,6 +195,8 @@ public class NativeBootstrap {
                             resolvedArtifact = resolveArtifact(artifact, false);
                         }
                         if (resolvedArtifact != null) {
+                            logger.info("haxelib resolved '"+resolvedArtifact.getArtifactId()+"' with version '"+resolvedArtifact.getVersion()+"' locally: " + resolvedLocally);
+
                             HaxelibHelper.injectPomHaxelib(resolvedArtifact, outputDirectory, logger, resolvedLocally);
                             iterator.remove();
                         }
