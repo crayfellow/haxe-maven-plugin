@@ -180,15 +180,16 @@ public class NativeBootstrap {
                                 a.getGroupId(), a.getArtifactId(), a.getVersion(),
                                 packaging, null
                         );
-                        if (artifact == null || artifact.getFile() == null || !artifact.getFile().exists()) {
-                            Artifact resolvedArtifact = resolveArtifact(artifact, true);
-                            if (resolvedArtifact == null) {
-                                resolvedArtifact = resolveArtifact(artifact, false);
-                                if (resolvedArtifact != null) {
-                                    HaxelibHelper.injectPomHaxelib(resolvedArtifact, outputDirectory, logger);
-                                    iterator.remove();
-                                }
-                            }
+                        Artifact resolvedArtifact = resolveArtifact(artifact, true);
+                        boolean resolvedLocally = (resolvedArtifact != null);
+                        logger.info("tried local first: "+ resolvedLocally);
+                        if (!resolvedLocally) {
+                            resolvedArtifact = resolveArtifact(artifact, false);
+                        }
+                        if (resolvedArtifact != null) {
+                            logger.info("RESOLVED. but locally? "+ resolvedLocally);
+                            HaxelibHelper.injectPomHaxelib(resolvedArtifact, outputDirectory, logger, resolvedLocally);
+                            iterator.remove();
                         }
                     }
                 }

@@ -65,47 +65,52 @@ public class HaxelibHelper {
         return haxelibDirectory;
     }
 
-    public static int injectPomHaxelib(Artifact artifact, File outputDirectory, Logger logger)
+    public static int injectPomHaxelib(Artifact artifact, File outputDirectory, Logger logger, boolean resolvedLocally)
     {
-        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
-        if (unpackDirectory.exists()) {
-            FileUtils.deleteQuietly(unpackDirectory);
-        }
+        if (!resolvedLocally) {
+            File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
+            if (unpackDirectory.exists()) {
+                FileUtils.deleteQuietly(unpackDirectory);
+            }
 
-        File tmpDir = new File(outputDirectory, artifact.getArtifactId() + "-unpack");
-        if (tmpDir.exists()) {
-            FileUtils.deleteQuietly(tmpDir);
-        }
+            File tmpDir = new File(outputDirectory, artifact.getArtifactId() + "-unpack");
+            if (tmpDir.exists()) {
+                FileUtils.deleteQuietly(tmpDir);
+            }
 
-        UnpackHelper unpackHelper = new UnpackHelper() {};
-        DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
-        try {
-            unpackHelper.unpack(tmpDir, artifact, unpackMethods, null);
-        }
-        catch (Exception e)
-        {
-            logger.error(String.format("Can't unpack %s: %s", artifact.getArtifactId(), e));
-        }
+            UnpackHelper unpackHelper = new UnpackHelper() {};
+            DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
+            try {
+                unpackHelper.unpack(tmpDir, artifact, unpackMethods, null);
+            }
+            catch (Exception e)
+            {
+                logger.error(String.format("Can't unpack %s: %s", artifact.getArtifactId(), e));
+            }
 
-        for (String firstFileName : tmpDir.list())
-        {
-            File firstFile = new File(tmpDir, firstFileName);
-            firstFile.renameTo(unpackDirectory);
-            break;
-        }
+            for (String firstFileName : tmpDir.list())
+            {
+                File firstFile = new File(tmpDir, firstFileName);
+                firstFile.renameTo(unpackDirectory);
+                break;
+            }
 
-        if (tmpDir.exists()) {
-            FileUtils.deleteQuietly(tmpDir);
-        }
+            if (tmpDir.exists()) {
+                FileUtils.deleteQuietly(tmpDir);
+            }
 
-        try
-        {
-            haxelib.execute("set", artifact.getArtifactId(), getCleanVersionForHaxelibArtifact(artifact.getVersion()));
-        }
-        catch (NativeProgramException e)
-        {
-            logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.", e);
-            return 1;
+            try
+            {
+                haxelib.execute("set", artifact.getArtifactId(), getCleanVersionForHaxelibArtifact(artifact.getVersion()));
+            }
+            catch (NativeProgramException e)
+            {
+                logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.", e);
+                return 1;
+            }
+        } else {
+            File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
+            logger.info("RESOLVED LOCALLY. VER=" + artifact.getVersion() + " exists? " + unpackDirectory.exists());
         }
         return 0;
     }
