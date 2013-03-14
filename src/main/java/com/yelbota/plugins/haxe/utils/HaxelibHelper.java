@@ -48,7 +48,7 @@ public class HaxelibHelper {
         return version.replaceAll("-(.*)$", "");
     }
 
-    private static File getHaxelibDirectoryForArtifactAndInitialize(String artifactId, String version)
+    private static File getHaxelibDirectoryForArtifactAndInitialize(String artifactId, String version, Logger logger)
     {
         File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifactId, version);
         if (haxelibDirectory != null) {
@@ -57,7 +57,7 @@ public class HaxelibHelper {
                 try {
                     currentFile.createNewFile();
                 } catch (IOException e) {
-                    System.out.println("Unable to create pointer for '"+artifactId+"' haxelib: " + e);
+                    logger.error("Unable to create pointer for '"+artifactId+"' haxelib: " + e);
                     // todo: throw exception!!
                 }
             }
@@ -67,7 +67,7 @@ public class HaxelibHelper {
 
     public static int injectPomHaxelib(Artifact artifact, File outputDirectory, Logger logger, boolean resolvedLocally)
     {
-        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion());
+        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion(), logger);
         if (!resolvedLocally
                 || resolvedLocally && !unpackDirectory.exists()) {
             if (unpackDirectory.exists()) {
