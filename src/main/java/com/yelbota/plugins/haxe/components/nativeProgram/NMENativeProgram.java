@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
 @Component(role = NativeProgram.class, hint = "nme")
@@ -51,7 +52,8 @@ public final class NMENativeProgram extends AbstractNativeProgram {
 
 		try
         {
-        	haxelib.execute("set", artifact.getArtifactId(), artifact.getVersion());
+        	haxelib.execute("set", artifact.getArtifactId(), 
+                HaxelibHelper.getCleanVersionForHaxelibArtifact(artifact.getVersion()));
         }
         catch (NativeProgramException e)
         {
@@ -65,20 +67,7 @@ public final class NMENativeProgram extends AbstractNativeProgram {
 	@Override
     protected File getUnpackDirectoryForArtifact(Artifact artifact) throws NativeProgramException
     {
-    	File nmeHaxelibHome = new File(haxelib.getLocalRepositoryPath(), artifact.getArtifactId());
-    	if (!nmeHaxelibHome.exists()) {
-			nmeHaxelibHome.mkdirs();
-		}
-
-		File currentFile = new File(nmeHaxelibHome, ".current");
-		if (!currentFile.exists()) {
-			try {
-				currentFile.createNewFile();
-            } catch (IOException e) {
-           		throw new NativeProgramException("Unable to create pointer for NME haxelib.", e);
-            }
-		}
-        return new File(nmeHaxelibHome, artifact.getVersion().replace(".", ","));
+        return HaxelibHelper.getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion(), logger);
     }
 
     @Override

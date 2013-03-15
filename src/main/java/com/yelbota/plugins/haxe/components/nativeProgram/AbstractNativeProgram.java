@@ -231,7 +231,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
     {
         if (!initialized) { 
             if (artifact != null && isHaxelibProgram()) {
-                File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifact.getArtifactId(), artifact.getVersion());
+                File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion(), logger);
                 if (haxelibDirectory != null || haxelibDirectory.exists()) {
                     this.directory = haxelibDirectory;
                     initialized = true;

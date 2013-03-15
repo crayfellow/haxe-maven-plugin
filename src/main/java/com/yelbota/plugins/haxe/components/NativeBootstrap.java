@@ -145,7 +145,7 @@ public class NativeBootstrap {
                     resolvedArtifact = resolveArtifact(artifact, false);
                 }
                 if (resolvedArtifact != null) {
-                    logger.info("toolchain resolved '"+resolvedArtifact.getArtifactId()+"' with version '"+resolvedArtifact.getVersion()+"' locally: " + resolvedLocally);
+                    resolvedArtifact.setVersion(artifact.getVersion());
                     artifactsMap.put(artifactKey, resolvedArtifact);
                 }
             }
@@ -195,8 +195,6 @@ public class NativeBootstrap {
                             resolvedArtifact = resolveArtifact(artifact, false);
                         }
                         if (resolvedArtifact != null) {
-                            logger.info("haxelib resolved '"+resolvedArtifact.getArtifactId()+"' with version '"+resolvedArtifact.getVersion()+"' locally: " + resolvedLocally);
-
                             HaxelibHelper.injectPomHaxelib(resolvedArtifact, outputDirectory, logger, resolvedLocally);
                             iterator.remove();
                         }

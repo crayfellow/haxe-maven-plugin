@@ -39,16 +39,21 @@ public class HaxelibHelper {
             if (!haxelibHome.exists()) {
                 haxelibHome.mkdirs();
             }
-            return new File(haxelibHome, getCleanVersionForHaxelibArtifact(version).replace(".", ","));
+            return new File(haxelibHome, getCleanVersionForHaxelibArtifactAsDirectoryName(version));
         } else return null;
     }
 
-    private static String getCleanVersionForHaxelibArtifact(String version)
+    private static String getCleanVersionForHaxelibArtifactAsDirectoryName(String version)
+    {
+        return getCleanVersionForHaxelibArtifact(version).replace(".", ",");
+    }
+
+    public static String getCleanVersionForHaxelibArtifact(String version)
     {
         return version.replaceAll("-(.*)$", "");
     }
 
-    private static File getHaxelibDirectoryForArtifactAndInitialize(String artifactId, String version, Logger logger)
+    public static File getHaxelibDirectoryForArtifactAndInitialize(String artifactId, String version, Logger logger)
     {
         File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifactId, version);
         if (haxelibDirectory != null) {

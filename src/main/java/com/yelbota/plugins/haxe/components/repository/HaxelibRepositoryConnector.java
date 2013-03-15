@@ -94,7 +94,6 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         {
             ArrayList<ArtifactDownload> normalArtifacts = new ArrayList<ArtifactDownload>();
             ArrayList<ArtifactDownload> haxelibArtifacts = new ArrayList<ArtifactDownload>();
-            ArrayList<ArtifactDownload> pomHaxelibArtifacts = new ArrayList<ArtifactDownload>();
 
             // Separate artifacts collection. Get haxelib artifacts and all others.
             for (ArtifactDownload artifactDownload : artifactDownloads)
@@ -105,7 +104,7 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                 } else {
                     if (artifact.getGroupId().equals("org.haxe.lib")) {
                         injectPomForHaxelib(artifactDownload);
-                    } else if (artifact.getClassifier().equals("haxelib")) {
+                    } else if (artifact.getClassifier().equals(HaxeFileExtensions.HAXELIB)) {
                         // the POM for these is already accounted for
                     } else {
                         normalArtifacts.add(artifactDownload);
