@@ -94,7 +94,6 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         {
             ArrayList<ArtifactDownload> normalArtifacts = new ArrayList<ArtifactDownload>();
             ArrayList<ArtifactDownload> haxelibArtifacts = new ArrayList<ArtifactDownload>();
-            //Map<String, ArtifactDownload> haxelibMap = new HashMap<String, ArtifactDownload>();
 
             // Separate artifacts collection. Get haxelib artifacts and all others.
             for (ArtifactDownload artifactDownload : artifactDownloads)
@@ -102,9 +101,6 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                 Artifact artifact = artifactDownload.getArtifact();
                 if (artifact.getExtension().equals(HaxeFileExtensions.HAXELIB)) {
                     haxelibArtifacts.add(artifactDownload);
-
-                    //String haxelibKey = artifact.getArtifactId() + ":" + artifact.getVersion();
-                    //haxelibMap.put(haxelibKey, artifactDownload);
                 } else {
                     /*if (artifact.getGroupId().equals("org.haxe.lib")) {
                         injectPomForHaxelib(artifactDownload);
@@ -121,19 +117,6 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                 }
             }
 
-            /*for (ArtifactDownload artifactDownload : normalArtifacts)
-            {
-                Artifact artifact = artifactDownload.getArtifact();
-                if (artifact.getGroupId().equals(HaxelibHelper.HAXELIB_GROUP_ID)) {
-                    String haxelibKey = artifact.getArtifactId() + ":" + artifact.getVersion();
-                    if (haxelibMap.get(haxelibKey) != null) {
-                        logger.info(" >> IGNORE: " + artifact);
-                        injectPomForHaxelib(artifactDownload);
-                        normalArtifacts.remove(artifactDownload);
-                    }
-                }
-            }*/
-
             getHaxelibs(haxelibArtifacts);
 
             // Get normal artifacts
@@ -144,7 +127,6 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                 Artifact artifact = artifactDownload.getArtifact();
                 if (artifact.getGroupId().equals(HaxelibHelper.HAXELIB_GROUP_ID)
                         && !artifact.getExtension().equals("pom")) {
-                    //logger.info("\n>> LOADED POM HAXELIB "+artifactDownload+" <<\n");
                     HaxelibHelper.injectPomHaxelib(artifactDownload, logger);
                 }
             }

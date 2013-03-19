@@ -238,6 +238,24 @@ public class NativeBootstrap {
                         if (resolvedArtifact != null) {
                             HaxelibHelper.injectPomHaxelib(a, outputDirectory, logger);
                         }*/
+
+                        Artifact artifact = repositorySystem.createArtifactWithClassifier(
+                            a.getGroupId(),
+                            a.getArtifactId(),
+                            a.getVersion(),
+                            a.getType(),
+                            null
+                        );
+                        Artifact resolvedArtifact = resolveArtifact(artifact, true);
+                        if (resolvedArtifact != null) {
+                            HaxelibHelper.injectPomHaxelib(
+                                a.getArtifactId(),
+                                a.getVersion(),
+                                a.getType(),
+                                a.getFile(),
+                                logger
+                            );
+                        }
                     }
                 }
 

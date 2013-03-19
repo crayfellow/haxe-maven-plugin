@@ -76,16 +76,21 @@ public class HaxelibHelper {
     public static int injectPomHaxelib(ArtifactDownload artifactDownload, Logger logger)
     {
         Artifact artifact = artifactDownload.getArtifact();
-        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion(), logger);
+        return injectPomHaxelib(artifact.getArtifactId(), artifact.getVersion(), artifact.getExtension(), artifactDownload.getFile(), logger);
+    }
+
+    public static int injectPomHaxelib(String artifactId, String artifactVersion, String artifactType, File artifactFile, Logger logger)
+    {
+        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifactId, artifactVersion, logger);
 
         if (!unpackDirectory.exists()
-            || artifactDownload.getFile().lastModified() > unpackDirectory.lastModified())
+            || artifactFile.lastModified() > unpackDirectory.lastModified())
         {
             if (unpackDirectory.exists()) {
                 FileUtils.deleteQuietly(unpackDirectory);
             }
 
-            File tmpDir = new File(haxelib.getLocalRepositoryPath().getParentFile(), artifact.getArtifactId() + "-unpack");
+            File tmpDir = new File(haxelib.getLocalRepositoryPath().getParentFile(), artifactId + "-unpack");
             if (tmpDir.exists()) {
                 FileUtils.deleteQuietly(tmpDir);
             }
@@ -93,11 +98,11 @@ public class HaxelibHelper {
             UnpackHelper unpackHelper = new UnpackHelper() {};
             DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
             try {
-                unpackHelper.unpack(tmpDir, artifactDownload, unpackMethods, null);
+                unpackHelper.unpack(tmpDir, artifactType, artifactFile, unpackMethods, null);
             }
             catch (Exception e)
             {
-                logger.error(String.format("Can't unpack %s: %s", artifact.getArtifactId(), e));
+                logger.error(String.format("Can't unpack %s: %s", artifactId, e));
             }
 
             for (String firstFileName : tmpDir.list())
@@ -113,11 +118,11 @@ public class HaxelibHelper {
 
             try
             {
-                haxelib.execute("set", artifact.getArtifactId(), getCleanVersionForHaxelibArtifact(artifact.getVersion()));
+                haxelib.execute("set", artifactId, getCleanVersionForHaxelibArtifact(artifactVersion));
             }
             catch (NativeProgramException e)
             {
-                logger.error("Unable to set version for haxelib '"+artifact.getArtifactId()+"'.", e);
+                logger.error("Unable to set version for haxelib '"+artifactId+"'.", e);
                 return 1;
             }
         }
