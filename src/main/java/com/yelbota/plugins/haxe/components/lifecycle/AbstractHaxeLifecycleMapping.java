@@ -42,7 +42,10 @@ public abstract class AbstractHaxeLifecycleMapping
 
         lifecycle.setId( "default" );
         Map<String, String> phases = new LinkedHashMap<String, String>();
+        phases.put( "doc", "com.yelbota.plugins:haxe-maven-plugin:doc" );
+        phases.put( "clean", "com.yelbota.plugins:haxe-maven-plugin:clean" );
         phases.put( "process-resources", "org.apache.maven.plugins:maven-resources-plugin:resources" );
+        phases.put( "resolve-dependencies", "org.apache.maven.plugins:maven-dependency-plugin:resolve" );
         phases.put( "compile", getCompiler() );
         phases.put( "process-test-resources", "org.apache.maven.plugins:maven-resources-plugin:testResources" );
         phases.put( "test-compile", "com.yelbota.plugins:haxe-maven-plugin:testCompile");

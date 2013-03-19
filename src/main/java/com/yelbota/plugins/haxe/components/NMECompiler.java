@@ -51,19 +51,27 @@ public final class NMECompiler {
 
     public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose) throws Exception
     {
-        compile(project, targets, nmml, debug, includeTestSources, verbose, null);
+        compile(project, targets, nmml, debug, includeTestSources, verbose, null, false);
     }
 
     public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose, List<String> additionalArguments) throws Exception
+    {
+        compile(project, targets, nmml, debug, includeTestSources, verbose, additionalArguments, false);
+    }
+
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose, List<String> additionalArguments, boolean generateDoc) throws Exception
     {
         File nmmlFile = new File(nmml);
         if (nmmlFile.exists()) {
             String targetString = null;
             List<String> list;
-            boolean chxdocIsValid = chxdoc != null && chxdoc.getInitialized();
+            boolean chxdocIsValid = false;
             boolean xmlGenerated = false;
             String buildDir = this.outputDirectory.getAbsolutePath();
 
+            if (generateDoc) {
+                chxdocIsValid = chxdoc != null && chxdoc.getInitialized();
+            }
             for (CompileTarget target : targets)
             {
                 switch (target)

@@ -21,14 +21,17 @@ import com.yelbota.plugins.nd.utils.DefaultUnpackMethods;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.artifact.Artifact;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
+import org.sonatype.aether.spi.connector.ArtifactDownload;
+import org.sonatype.aether.artifact.Artifact;
 
 import java.io.IOException;
 import java.io.File;
 
 public class HaxelibHelper {
+    public static final String HAXELIB_URL = "lib.haxe.org";
+    public static final String HAXELIB_GROUP_ID = "org.haxe.lib";
 
     private static HaxelibNativeProgram haxelib;
 
@@ -70,16 +73,19 @@ public class HaxelibHelper {
         return haxelibDirectory;
     }
 
-    public static int injectPomHaxelib(Artifact artifact, File outputDirectory, Logger logger, boolean resolvedLocally)
+    public static int injectPomHaxelib(ArtifactDownload artifactDownload, Logger logger)
     {
+        Artifact artifact = artifactDownload.getArtifact();
         File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion(), logger);
-        if (!resolvedLocally
-                || resolvedLocally && !unpackDirectory.exists()) {
+
+        if (!unpackDirectory.exists()
+            || artifactDownload.getFile().lastModified() > unpackDirectory.lastModified())
+        {
             if (unpackDirectory.exists()) {
                 FileUtils.deleteQuietly(unpackDirectory);
             }
 
-            File tmpDir = new File(outputDirectory, artifact.getArtifactId() + "-unpack");
+            File tmpDir = new File(haxelib.getLocalRepositoryPath().getParentFile(), artifact.getArtifactId() + "-unpack");
             if (tmpDir.exists()) {
                 FileUtils.deleteQuietly(tmpDir);
             }
@@ -87,7 +93,7 @@ public class HaxelibHelper {
             UnpackHelper unpackHelper = new UnpackHelper() {};
             DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
             try {
-                unpackHelper.unpack(tmpDir, artifact, unpackMethods, null);
+                unpackHelper.unpack(tmpDir, artifactDownload, unpackMethods, null);
             }
             catch (Exception e)
             {

@@ -16,10 +16,34 @@
 package com.yelbota.plugins.haxe;
 
 import com.yelbota.plugins.haxe.components.HaxeCompiler;
+import com.yelbota.plugins.haxe.components.NativeBootstrap;
+import com.yelbota.plugins.haxe.components.HaxeCompiler;
+import com.yelbota.plugins.haxe.components.NMECompiler;
+
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.project.MavenProject;
+
+import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
+
+import java.util.Set;
+import java.util.List;
+import java.io.IOException;
+import java.io.File;
+
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+
+import org.xml.sax.*;
+import org.w3c.dom.*;
 
 public abstract class AbstractCompileMojo extends AbstractHaxeMojo {
 
@@ -44,11 +68,90 @@ public abstract class AbstractCompileMojo extends AbstractHaxeMojo {
     @Component
     protected HaxeCompiler compiler;
 
+    @Component
+    protected NMECompiler nmeCompiler;
+
+    @Parameter(required = false)
+    protected List<String> compilerFlags;
+
+    @Parameter
+    protected String nmml;
+
+    @Component(hint = HaxeFileExtensions.HAXELIB)
+    protected ArtifactHandler haxelibHandler;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         super.execute();
 
         compiler.setOutputDirectory(outputDirectory);
+        if (nmml != null) {
+            nmeCompiler.setOutputDirectory(outputDirectory);
+        }
+    }
+
+    @Override
+    protected void initialize(MavenProject project, ArtifactRepository localRepository) throws Exception
+    {
+        if (nmml != null) {
+            File nmmlFile = new File(outputDirectory.getParentFile(), nmml);
+            if (nmmlFile.exists()) {
+                nmml = nmmlFile.getAbsolutePath();
+                Document dom;
+                // Make an  instance of the DocumentBuilderFactory
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                try {
+                    // use the factory to take an instance of the document builder
+                    DocumentBuilder db = dbf.newDocumentBuilder();
+                    // parse using the builder to get the DOM mapping of the    
+                    // XML file
+                    dom = db.parse(nmmlFile.getAbsolutePath());
+
+                    Element doc = dom.getDocumentElement();
+
+                    NodeList nl;
+
+                    nl = doc.getElementsByTagName("haxelib");
+                    String haxelibName;
+                    String haxelibVersion;
+                    if (nl.getLength() > 0) {
+                        Set<Artifact> dependencies = project.getDependencyArtifacts();
+
+                        for (int i = 0; i < nl.getLength(); i++) {
+                            haxelibVersion = "";
+                            Node node = nl.item(i);
+                            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                                Element element = (Element) node;
+                                haxelibName = element.getAttribute("name");
+                                if (element.hasAttribute("version")) {
+                                    haxelibVersion = element.getAttribute("version");
+                                }
+                                Artifact artifact = new DefaultArtifact(
+                                    "org.haxe.lib",
+                                    haxelibName,
+                                    haxelibVersion,
+                                    Artifact.SCOPE_COMPILE,
+                                    "haxelib",
+                                    "",
+                                    haxelibHandler);
+                                
+                                //dependencies.add(artifact);
+                            }
+                        }
+                    }
+                } catch (ParserConfigurationException pce) {
+                    System.out.println(pce.getMessage());
+                } catch (SAXException se) {
+                    System.out.println(se.getMessage());
+                } catch (IOException ioe) {
+                    System.err.println(ioe.getMessage());
+                }
+            } else {
+                nmml = null;
+            }
+        }
+
+        super.initialize(project, localRepository);
     }
 }

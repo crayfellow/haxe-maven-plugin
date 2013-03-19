@@ -27,11 +27,15 @@ import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.StringUtils;
 import org.apache.commons.io.FileUtils;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Represents package on native application (or group on applications) as
@@ -94,7 +98,6 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             {
                 logger.error(String.format("Can't unpack %s: %s", artifact.getArtifactId(), e));
             }
-            initialized = true;
         }
     }
 
@@ -255,17 +258,24 @@ public abstract class AbstractNativeProgram implements NativeProgram {
     {
         File unpackDirectory = getUnpackDirectoryForArtifact(artifact);
 
-        if (!unpackDirectory.exists())
+        if (!unpackDirectory.exists()
+            || artifact.getFile().lastModified() > unpackDirectory.lastModified())
         {
+            if (unpackDirectory.exists()) {
+                FileUtils.deleteQuietly(unpackDirectory);
+            }
             File tmpDir = new File(outputDirectory, getUniqueArtifactPath() + "-unpack");
 
             if (tmpDir.exists())
-                tmpDir.delete();
+                FileUtils.deleteQuietly(tmpDir);
 
             UnpackHelper unpackHelper = new UnpackHelper() {};
             DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
             unpackHelper.unpack(tmpDir, artifact, unpackMethods, null);
 
+            //if (unpackDirectory.exists()) {
+            //    FileUtils.deleteQuietly(unpackDirectory);
+            //}
             for (String firstFileName : tmpDir.list())
             {
                 File firstFile = new File(tmpDir, firstFileName);
@@ -281,9 +291,10 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             }
 
             if (tmpDir.exists())
-                tmpDir.delete();
+                FileUtils.deleteQuietly(tmpDir);
         }
 
+        initialized = true;
         String directoryPath = unpackDirectory.getAbsolutePath();
         // Add current directory to path
         path.add(directoryPath);

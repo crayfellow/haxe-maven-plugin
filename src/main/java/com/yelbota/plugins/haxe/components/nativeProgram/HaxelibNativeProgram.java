@@ -52,7 +52,7 @@ public final class HaxelibNativeProgram extends AbstractNativeProgram {
     {
         try
         {
-           this.localRepositoryPath = new File(pluginHome, "_haxelib");
+            this.localRepositoryPath = new File(pluginHome, "_haxelib");
 
             if (!this.localRepositoryPath.exists())
             {

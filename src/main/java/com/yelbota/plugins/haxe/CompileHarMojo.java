@@ -29,25 +29,16 @@ import org.apache.maven.plugins.annotations.Component;
 import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 
+import java.io.IOException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Set;
 import java.util.List;
-
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import org.xml.sax.*;
-import org.w3c.dom.*;
 
 /**
  * Builds a `har` package. This is a zip archive which
@@ -61,19 +52,7 @@ public class CompileHarMojo extends AbstractCompileMojo {
      * all of declared targets.
      */
     @Parameter(required = true)
-    private Set<CompileTarget> targets;
-
-    @Parameter(required = false)
-    private List<String> compilerFlags;
-
-    @Parameter
-    protected String nmml;
-
-    @Component
-    protected NMECompiler nmeCompiler;
-
-    @Component(hint = HaxeFileExtensions.HAXELIB)
-    protected ArtifactHandler haxelibHandler;
+    protected Set<CompileTarget> targets;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
@@ -110,54 +89,6 @@ public class CompileHarMojo extends AbstractCompileMojo {
     @Override
     protected void initialize(MavenProject project, ArtifactRepository localRepository) throws Exception
     {
-        if (nmml != null) {
-            File nmmlFile = new File(outputDirectory.getParentFile(), nmml);
-            if (nmmlFile.exists()) {
-                nmml = nmmlFile.getAbsolutePath();
-                Document dom;
-                // Make an  instance of the DocumentBuilderFactory
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                try {
-                    // use the factory to take an instance of the document builder
-                    DocumentBuilder db = dbf.newDocumentBuilder();
-                    // parse using the builder to get the DOM mapping of the    
-                    // XML file
-                    dom = db.parse(nmmlFile.getAbsolutePath());
-
-                    Element doc = dom.getDocumentElement();
-
-                    NodeList nl;
-
-                    nl = doc.getElementsByTagName("haxelib");
-                    String haxelibName;
-                    String haxelibVersion;
-                    if (nl.getLength() > 0) {
-                        Set<Artifact> dependencies = project.getDependencyArtifacts();
-
-                        for (int i = 0; i < nl.getLength(); i++) {
-                            haxelibVersion = "";
-                            Node node = nl.item(i);
-                            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                                Element element = (Element) node;
-                                haxelibName = element.getAttribute("name");
-                                if (element.hasAttribute("version")) haxelibVersion = element.getAttribute("version");
-                                Artifact artifact = new DefaultArtifact("org.haxe.lib", haxelibName, haxelibVersion, Artifact.SCOPE_COMPILE, "haxelib", "", haxelibHandler);
-                                
-                                dependencies.add(artifact);
-                            }
-                        }
-                    }
-                } catch (ParserConfigurationException pce) {
-                    System.out.println(pce.getMessage());
-                } catch (SAXException se) {
-                    System.out.println(se.getMessage());
-                } catch (IOException ioe) {
-                    System.err.println(ioe.getMessage());
-                }
-            } else {
-                nmml = null;
-            }
-        }
         super.initialize(project, localRepository);
     }
 
@@ -205,7 +136,6 @@ public class CompileHarMojo extends AbstractCompileMojo {
             }
             compiler.compile(project, compileTargets, main, debug, false, verbose, compilerFlags);
         } else {
-            nmeCompiler.setOutputDirectory(outputDirectory);
             nmeCompiler.compile(project, targets, nmml, debug, false, verbose, compilerFlags);
         }
     }

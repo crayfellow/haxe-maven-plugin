@@ -34,6 +34,8 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
+import org.apache.commons.io.FileUtils;
+
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
@@ -97,15 +99,32 @@ public class NativeBootstrap {
 
         Map<String, Plugin> pluginMap = project.getBuild().getPluginsAsMap();
         Plugin plugin = pluginMap.get("com.yelbota.plugins:haxe-maven-plugin");
-        Artifact pluginArtifact = resolveArtifact(repositorySystem.createPluginArtifact(plugin), false);
-        String pluginHomeName = plugin.getArtifactId() + "-" + plugin.getVersion();
-        File pluginHome = new File(pluginArtifact.getFile().getParentFile(), pluginHomeName);
+        File pluginHome = initializePluginHome(project, plugin);
 
         if (!pluginHome.exists())
             pluginHome.mkdirs();
 
-        initializePrograms(pluginHome, plugin.getDependencies());
+        initializePrograms(project, pluginHome, plugin.getDependencies());
         initializeHaxelib(pluginHome);
+    }
+
+    private File initializePluginHome(MavenProject project, Plugin plugin) throws Exception
+    {
+        Artifact pluginArtifact = resolveArtifact(repositorySystem.createPluginArtifact(plugin), true);
+        //String pluginHomeName = plugin.getArtifactId() + "-" + plugin.getVersion();
+        String pluginHomeName = "home";
+        return new File(pluginArtifact.getFile().getParentFile(), pluginHomeName);
+    }
+
+    public void clean(MavenProject project) throws Exception
+    {
+        Map<String, Plugin> pluginMap = project.getBuild().getPluginsAsMap();
+        Plugin plugin = pluginMap.get("com.yelbota.plugins:haxe-maven-plugin");
+        File pluginHome = initializePluginHome(project, plugin);
+        if (pluginHome.exists()) {
+            logger.info("Deleting " + pluginHome.getAbsolutePath());
+            FileUtils.deleteQuietly(pluginHome);
+        }
     }
 
     //-------------------------------------------------------------------------
@@ -114,7 +133,7 @@ public class NativeBootstrap {
     //
     //-------------------------------------------------------------------------
 
-    private void initializePrograms(File pluginHome, List<Dependency> pluginDependencies) throws Exception
+    private void initializePrograms(MavenProject project, File pluginHome, List<Dependency> pluginDependencies) throws Exception
     {
         Map<String, Artifact> artifactsMap = new HashMap<String, Artifact>();
         Set<String> path = new HashSet<String>();
@@ -131,12 +150,16 @@ public class NativeBootstrap {
                 || artifactKey.equals(NEKO_KEY)
                 || artifactKey.equals(NME_KEY))
             {
-                String classifier = OSClassifiers.getDefaultClassifier();
+            /*    String classifier = OSClassifiers.getDefaultClassifier();
                 String packaging = PackageTypes.getSDKArtifactPackaging(classifier);
                 if (artifactKey.equals(NME_KEY)) classifier = null;
+
                 Artifact artifact = repositorySystem.createArtifactWithClassifier(
-                        dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion(),
-                        packaging, classifier
+                        dependency.getGroupId(), 
+                        dependency.getArtifactId(), 
+                        dependency.getVersion(),
+                        packaging,
+                        classifier
                 );
 
                 Artifact resolvedArtifact = resolveArtifact(artifact, true);
@@ -146,6 +169,18 @@ public class NativeBootstrap {
                 }
                 if (resolvedArtifact != null) {
                     resolvedArtifact.setVersion(artifact.getVersion());
+                    artifactsMap.put(artifactKey, resolvedArtifact);
+                }*/
+
+                Artifact artifact = repositorySystem.createArtifactWithClassifier(
+                        dependency.getGroupId(), 
+                        dependency.getArtifactId(), 
+                        dependency.getVersion(),
+                        dependency.getType(),
+                        dependency.getClassifier()
+                );
+                Artifact resolvedArtifact = resolveArtifact(artifact, true);
+                if (resolvedArtifact != null) {
                     artifactsMap.put(artifactKey, resolvedArtifact);
                 }
             }
@@ -170,9 +205,10 @@ public class NativeBootstrap {
         haxelib.initialize(artifactsMap.get(HAXE_COMPILER_KEY), outputDirectory, pluginHome, path);
         HaxelibHelper.setHaxelib(haxelib);
 
+        Iterator<Artifact> iterator;
         Set<Artifact> projectDependencies = project.getDependencyArtifacts();
         if (projectDependencies != null) {
-            Iterator<Artifact> iterator = projectDependencies.iterator();
+            iterator = projectDependencies.iterator();
             while(iterator.hasNext()) {
                 Artifact a = iterator.next();
 
@@ -183,11 +219,11 @@ public class NativeBootstrap {
                         iterator.remove();
                     }
                 } else {
-                    if (a.getClassifier().equals("haxelib")) {
-                        String packaging = PackageTypes.getSDKArtifactPackaging(OSClassifiers.getDefaultClassifier());
+                    if (a.getGroupId().equals(HaxelibHelper.HAXELIB_GROUP_ID)) {
+                        /*String packaging = PackageTypes.getSDKArtifactPackaging(OSClassifiers.getDefaultClassifier());
                         Artifact artifact = repositorySystem.createArtifactWithClassifier(
-                                a.getGroupId(), a.getArtifactId(), a.getVersion(),
-                                packaging, null
+                            a.getGroupId(), a.getArtifactId(), a.getVersion(),
+                            packaging, null
                         );
                         Artifact resolvedArtifact = resolveArtifact(artifact, true);
                         boolean resolvedLocally = (resolvedArtifact != null);
@@ -197,7 +233,11 @@ public class NativeBootstrap {
                         if (resolvedArtifact != null) {
                             HaxelibHelper.injectPomHaxelib(resolvedArtifact, outputDirectory, logger, resolvedLocally);
                             iterator.remove();
-                        }
+                        }*/
+                        /*Artifact resolvedArtifact = resolveArtifact(a, false);
+                        if (resolvedArtifact != null) {
+                            HaxelibHelper.injectPomHaxelib(a, outputDirectory, logger);
+                        }*/
                     }
                 }
 
@@ -213,7 +253,7 @@ public class NativeBootstrap {
 
         if (artifactsMap.get(NME_KEY) != null) {
             if (projectDependencies != null) {
-                Iterator<Artifact> iterator = projectDependencies.iterator();
+                iterator = projectDependencies.iterator();
                 while(iterator.hasNext()) {
                     Artifact a = iterator.next();
                     if (a.getType().equals(HaxeFileExtensions.HAXELIB)
@@ -233,7 +273,7 @@ public class NativeBootstrap {
     {
         // Add haxelib virtual repository.
         project.getRemoteArtifactRepositories().add(
-                new MavenArtifactRepository("lib.haxe.org", "http://lib.haxe.org",
+                new MavenArtifactRepository(HaxelibHelper.HAXELIB_URL, "http://"+HaxelibHelper.HAXELIB_URL,
                 new HaxelibRepositoryLayout(),
                 new ArtifactRepositoryPolicy(false, ArtifactRepositoryPolicy.UPDATE_POLICY_ALWAYS, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE),
                 new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_NEVER, ArtifactRepositoryPolicy.CHECKSUM_POLICY_IGNORE)
@@ -266,6 +306,8 @@ public class NativeBootstrap {
         if (!localOnly) {
             request.setRemoteRepositories(project.getRemoteArtifactRepositories());
         }
+        request.setResolveRoot( true );
+        request.setResolveTransitively( false );
         ArtifactResolutionResult resolutionResult = repositorySystem.resolve(request);
 
         if (!resolutionResult.isSuccess())
@@ -280,6 +322,8 @@ public class NativeBootstrap {
                 if (!localOnly) {
                     request.setRemoteRepositories(project.getRemoteArtifactRepositories());
                 }
+                request.setResolveRoot( true );
+                request.setResolveTransitively( false );
                 resolutionResult = repositorySystem.resolve(request);
                 if (resolutionResult.isSuccess()) {
                     return artifact;

@@ -15,7 +15,9 @@
  */
 package com.yelbota.plugins.haxe;
 
+import com.yelbota.plugins.haxe.components.HaxeCompiler;
 import com.yelbota.plugins.haxe.components.NativeBootstrap;
+import com.yelbota.plugins.haxe.utils.CompileTarget;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
@@ -25,38 +27,32 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
 
 import java.io.File;
+import java.util.Set;
 
-public abstract class AbstractHaxeMojo extends AbstractMojo {
+@Mojo(name="doc")
+public class DocMojo extends AbstractCompileMojo {
 
-    @Component
-    protected NativeBootstrap bootstrap;
-
-    @Parameter(property = "localRepository", required = true, readonly = true)
-    private ArtifactRepository localRepository;
-
-    @Component
-    protected MavenProject project;
-
-    protected File outputDirectory;
+    @Parameter(required = true)
+    protected Set<CompileTarget> targets;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
+		super.execute();
+
         try
         {
-            outputDirectory = new File(project.getBuild().getDirectory());
-            initialize(project, localRepository);
+	        if (nmml != null) {
+	            nmeCompiler.compile(project, targets, nmml, debug, false, verbose, compilerFlags, true);
+	        }
         }
         catch (Exception e)
         {
             throw new MojoExecutionException(e.getMessage(), e);
         }
-    }
-
-    protected void initialize(MavenProject project, ArtifactRepository localRepository) throws Exception
-    {
-        bootstrap.initialize(project, localRepository);
     }
 }

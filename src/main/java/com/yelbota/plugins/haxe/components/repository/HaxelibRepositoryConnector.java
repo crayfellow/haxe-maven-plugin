@@ -94,6 +94,7 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
         {
             ArrayList<ArtifactDownload> normalArtifacts = new ArrayList<ArtifactDownload>();
             ArrayList<ArtifactDownload> haxelibArtifacts = new ArrayList<ArtifactDownload>();
+            //Map<String, ArtifactDownload> haxelibMap = new HashMap<String, ArtifactDownload>();
 
             // Separate artifacts collection. Get haxelib artifacts and all others.
             for (ArtifactDownload artifactDownload : artifactDownloads)
@@ -101,21 +102,52 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                 Artifact artifact = artifactDownload.getArtifact();
                 if (artifact.getExtension().equals(HaxeFileExtensions.HAXELIB)) {
                     haxelibArtifacts.add(artifactDownload);
+
+                    //String haxelibKey = artifact.getArtifactId() + ":" + artifact.getVersion();
+                    //haxelibMap.put(haxelibKey, artifactDownload);
                 } else {
-                    if (artifact.getGroupId().equals("org.haxe.lib")) {
+                    /*if (artifact.getGroupId().equals("org.haxe.lib")) {
                         injectPomForHaxelib(artifactDownload);
                     } else if (artifact.getClassifier().equals(HaxeFileExtensions.HAXELIB)) {
                         // the POM for these is already accounted for
+                    } else {*/
+
+                    if (artifact.getGroupId().equals(HaxelibHelper.HAXELIB_GROUP_ID)
+                          && artifact.getExtension().equals("pom")) {
+                        injectPomForHaxelib(artifactDownload);
                     } else {
                         normalArtifacts.add(artifactDownload);
-                    }                
+                    }
                 }
             }
+
+            /*for (ArtifactDownload artifactDownload : normalArtifacts)
+            {
+                Artifact artifact = artifactDownload.getArtifact();
+                if (artifact.getGroupId().equals(HaxelibHelper.HAXELIB_GROUP_ID)) {
+                    String haxelibKey = artifact.getArtifactId() + ":" + artifact.getVersion();
+                    if (haxelibMap.get(haxelibKey) != null) {
+                        logger.info(" >> IGNORE: " + artifact);
+                        injectPomForHaxelib(artifactDownload);
+                        normalArtifacts.remove(artifactDownload);
+                    }
+                }
+            }*/
+
+            getHaxelibs(haxelibArtifacts);
 
             // Get normal artifacts
             defaultRepositoryConnector.get(normalArtifacts, metadataDownloads);
 
-            getHaxelibs(haxelibArtifacts);
+            for (ArtifactDownload artifactDownload : normalArtifacts)
+            {
+                Artifact artifact = artifactDownload.getArtifact();
+                if (artifact.getGroupId().equals(HaxelibHelper.HAXELIB_GROUP_ID)
+                        && !artifact.getExtension().equals("pom")) {
+                    //logger.info("\n>> LOADED POM HAXELIB "+artifactDownload+" <<\n");
+                    HaxelibHelper.injectPomHaxelib(artifactDownload, logger);
+                }
+            }
         }
     }
 
@@ -147,6 +179,8 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                     {
                         artifactDownload.setException(new ArtifactTransferException(
                                 artifact, repository, "Can't resolve artifact " + artifact.toString()));
+                    //} else {
+                    //    injectPomForHaxelib(artifactDownload);
                     }
                 }
                 catch (NativeProgramException e)
