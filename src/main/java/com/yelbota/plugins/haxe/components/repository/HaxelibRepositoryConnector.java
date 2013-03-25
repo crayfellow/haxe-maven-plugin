@@ -27,7 +27,6 @@ import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
 import org.codehaus.plexus.logging.Logger;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.spi.connector.*;
 import org.sonatype.aether.transfer.ArtifactTransferException;
@@ -117,8 +116,6 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                 }
             }
 
-            getHaxelibs(haxelibArtifacts);
-
             // Get normal artifacts
             defaultRepositoryConnector.get(normalArtifacts, metadataDownloads);
 
@@ -130,6 +127,8 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                     HaxelibHelper.injectPomHaxelib(artifactDownload, logger);
                 }
             }
+
+            getHaxelibs(haxelibArtifacts);
         }
     }
 

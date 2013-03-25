@@ -28,7 +28,11 @@ import java.util.Set;
 
 @Component(role = HaxelibNativeProgram.class, hint = "haxelib")
 public final class HaxelibNativeProgram extends AbstractNativeProgram {
+    private static final String REPOSITORY_PATH_NAME = "_haxelib";
+    private static final String LIB_UNPACK_PATH_NAME = "_libUnpack";
+
 	private File localRepositoryPath;
+    private File libUnpackPath;
 
     @Requirement(hint = "haxe")
     private NativeProgram haxe;
@@ -45,14 +49,25 @@ public final class HaxelibNativeProgram extends AbstractNativeProgram {
 
     public File getLocalRepositoryPath()
     {
-    	return this.localRepositoryPath;
+        return this.localRepositoryPath;
+    }
+
+    public File getLibUnpackPath()
+    {
+        if (this.libUnpackPath == null) {
+            this.libUnpackPath = new File(pluginHome, LIB_UNPACK_PATH_NAME);
+            if (!this.libUnpackPath.exists()) {
+                this.libUnpackPath.mkdirs();
+            }
+        }
+        return this.libUnpackPath;
     }
 
     private void setupHaxelib()
     {
         try
         {
-            this.localRepositoryPath = new File(pluginHome, "_haxelib");
+            this.localRepositoryPath = new File(pluginHome, REPOSITORY_PATH_NAME);
 
             if (!this.localRepositoryPath.exists())
             {

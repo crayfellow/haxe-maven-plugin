@@ -45,6 +45,7 @@ public abstract class AbstractHaxeLifecycleMapping
         phases.put( "doc", "com.yelbota.plugins:haxe-maven-plugin:doc" );
         //phases.put( "clean", "com.yelbota.plugins:haxe-maven-plugin:clean" );
         phases.put( "process-resources", "org.apache.maven.plugins:maven-resources-plugin:resources" );
+        phases.put( "purge-local-repository", "org.apache.maven.plugins:maven-dependency-plugin:purge-local-repository -Dexclude=com.yelbota.plugins:haxe-maven-plugin" );
         phases.put( "resolve-dependencies", "org.apache.maven.plugins:maven-dependency-plugin:resolve" );
         phases.put( "compile", getCompiler() );
         phases.put( "process-test-resources", "org.apache.maven.plugins:maven-resources-plugin:testResources" );

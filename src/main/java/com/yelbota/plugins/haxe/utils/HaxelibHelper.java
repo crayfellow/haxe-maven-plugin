@@ -35,6 +35,16 @@ public class HaxelibHelper {
 
     private static HaxelibNativeProgram haxelib;
 
+    private static String getCleanVersionForHaxelibArtifactAsDirectoryName(String version)
+    {
+        return getCleanVersionForHaxelibArtifact(version).replace(".", ",");
+    }
+
+    public static String getCleanVersionForHaxelibArtifact(String version)
+    {
+        return version.replaceAll("-(.*)$", "");
+    }
+
     public static final File getHaxelibDirectoryForArtifact(String artifactId, String version)
     {
         if (haxelib != null && haxelib.getInitialized()) {
@@ -44,16 +54,6 @@ public class HaxelibHelper {
             }
             return new File(haxelibHome, getCleanVersionForHaxelibArtifactAsDirectoryName(version));
         } else return null;
-    }
-
-    private static String getCleanVersionForHaxelibArtifactAsDirectoryName(String version)
-    {
-        return getCleanVersionForHaxelibArtifact(version).replace(".", ",");
-    }
-
-    public static String getCleanVersionForHaxelibArtifact(String version)
-    {
-        return version.replaceAll("-(.*)$", "");
     }
 
     public static File getHaxelibDirectoryForArtifactAndInitialize(String artifactId, String version, Logger logger)
@@ -79,41 +79,47 @@ public class HaxelibHelper {
         return injectPomHaxelib(artifact.getArtifactId(), artifact.getVersion(), artifact.getExtension(), artifactDownload.getFile(), logger);
     }
 
+    public static File getLibUnpackPath(String name, String version)
+    {
+        if (haxelib != null) {
+            return new File(haxelib.getLibUnpackPath(), 
+                name + "-" + getCleanVersionForHaxelibArtifact(version));
+        }
+        return null;
+    }
+
     public static int injectPomHaxelib(String artifactId, String artifactVersion, String artifactType, File artifactFile, Logger logger)
     {
-        File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifactId, artifactVersion, logger);
+        //File unpackDirectory = getHaxelibDirectoryForArtifactAndInitialize(artifactId, artifactVersion, logger);
+        File unpackDir = getLibUnpackPath(artifactId, artifactVersion);
 
-        if (!unpackDirectory.exists()
-            || artifactFile.lastModified() > unpackDirectory.lastModified())
+        if (!unpackDir.exists()
+            || artifactFile.lastModified() > unpackDir.lastModified())
         {
-            if (unpackDirectory.exists()) {
-                FileUtils.deleteQuietly(unpackDirectory);
-            }
+            File libDir = getHaxelibDirectoryForArtifactAndInitialize(artifactId, artifactVersion, logger);
 
-            File tmpDir = new File(haxelib.getLocalRepositoryPath().getParentFile(), artifactId + "-unpack");
-            if (tmpDir.exists()) {
-                FileUtils.deleteQuietly(tmpDir);
+            if (unpackDir.exists()) {
+                FileUtils.deleteQuietly(unpackDir);
+            }
+            if (libDir.exists()) {
+                FileUtils.deleteQuietly(libDir);
             }
 
             UnpackHelper unpackHelper = new UnpackHelper() {};
             DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
             try {
-                unpackHelper.unpack(tmpDir, artifactType, artifactFile, unpackMethods, null);
+                unpackHelper.unpack(unpackDir, artifactType, artifactFile, unpackMethods, null);
             }
             catch (Exception e)
             {
                 logger.error(String.format("Can't unpack %s: %s", artifactId, e));
             }
 
-            for (String firstFileName : tmpDir.list())
+            for (String firstFileName : unpackDir.list())
             {
-                File firstFile = new File(tmpDir, firstFileName);
-                firstFile.renameTo(unpackDirectory);
+                File firstFile = new File(unpackDir, firstFileName);
+                firstFile.renameTo(libDir);
                 break;
-            }
-
-            if (tmpDir.exists()) {
-                FileUtils.deleteQuietly(tmpDir);
             }
 
             try

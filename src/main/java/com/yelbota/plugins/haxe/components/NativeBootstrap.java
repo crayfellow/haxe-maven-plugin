@@ -246,8 +246,9 @@ public class NativeBootstrap {
                             a.getType(),
                             null
                         );
-                        Artifact resolvedArtifact = resolveArtifact(artifact, true);
-                        if (resolvedArtifact != null) {
+
+                        Artifact resolvedArtifact = resolveArtifact(artifact, false);
+                        if (resolvedArtifact != null && resolvedArtifact.getFile() != null) {
                             HaxelibHelper.injectPomHaxelib(
                                 a.getArtifactId(),
                                 a.getVersion(),
@@ -324,8 +325,8 @@ public class NativeBootstrap {
         if (!localOnly) {
             request.setRemoteRepositories(project.getRemoteArtifactRepositories());
         }
-        request.setResolveRoot( true );
-        request.setResolveTransitively( false );
+        //request.setResolveRoot( true );
+        //request.setResolveTransitively( false );
         ArtifactResolutionResult resolutionResult = repositorySystem.resolve(request);
 
         if (!resolutionResult.isSuccess())
