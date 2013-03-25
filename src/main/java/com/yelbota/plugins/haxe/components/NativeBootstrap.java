@@ -110,7 +110,7 @@ public class NativeBootstrap {
 
     private File initializePluginHome(MavenProject project, Plugin plugin) throws Exception
     {
-        Artifact pluginArtifact = resolveArtifact(repositorySystem.createPluginArtifact(plugin), true);
+        Artifact pluginArtifact = resolveArtifact(repositorySystem.createPluginArtifact(plugin), false);
         //String pluginHomeName = plugin.getArtifactId() + "-" + plugin.getVersion();
         String pluginHomeName = "home";
         return new File(pluginArtifact.getFile().getParentFile(), pluginHomeName);
