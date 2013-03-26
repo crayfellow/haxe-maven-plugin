@@ -52,11 +52,35 @@ public final class MUnitCompiler {
 
     public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
     {
-        List<String> list;
+        runWithArgument("-norun", additionalArguments);
+    }
 
-        int returnValue;
-        
-        list = new ArrayList<String>();
+    public void run(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources) throws Exception
+    {
+        run(project, targets, nmml, debug, includeTestSources, null);
+    }
+
+    public void run(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
+    {
+        runWithArgument("-nogen", additionalArguments);
+    }
+
+    private void runWithArgument(String argument, List<String> additionalArguments) throws Exception
+    {
+        List<String> arguments = updateArguments(additionalArguments);
+        if (argument != null) {
+            arguments.add(argument);
+        }
+        int returnValue = munit.execute(arguments, logger);
+
+        if (returnValue > 0) {
+            throw new Exception("MassiveUnit test encountered an error and cannot proceed.");
+        }
+    }
+
+    private List<String> updateArguments(List<String> additionalArguments)
+    {     
+        List<String> list = new ArrayList<String>();
         list.add("test");
         list.add("test.hxml");
         list.add("test_src");
@@ -64,11 +88,10 @@ public final class MUnitCompiler {
         list.add("test_report");
         list.add("-coverage");
         list.add("-result-exit-code");
-        returnValue = munit.execute(list, logger);
-
-        if (returnValue > 0) {
-            throw new Exception("MassiveUnit test encountered an error and cannot proceed.");
+        if (additionalArguments != null) {
+            list.addAll(additionalArguments);
         }
+        return list;
     }
 
     public boolean getHasRequirements()

@@ -18,6 +18,7 @@ package com.yelbota.plugins.haxe;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 import com.yelbota.plugins.haxe.utils.OutputNamesHelper;
+import com.yelbota.plugins.haxe.components.MUnitCompiler;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -36,24 +37,43 @@ public final class TestRunMojo extends AbstractHaxeMojo {
     @Component(hint = "neko")
     private NativeProgram neko;
 
+    @Component
+    private MUnitCompiler munitCompiler;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         super.execute();
 
-        try
-        {
-            File testFile = new File(outputDirectory, OutputNamesHelper.getTestOutput(project));
+        if (munitCompiler.getHasRequirements()) {
+            getLog().info("Running tests using MassiveUnit.");
 
-            if (testFile.exists())
+            try
             {
-                neko.execute(testFile.getAbsolutePath());
+                munitCompiler.setOutputDirectory(outputDirectory);
+                munitCompiler.run(project, null, "", true, true);
             }
-            else getLog().info("No tests to run.");
-        }
-        catch (NativeProgramException e)
-        {
-            throw new MojoFailureException("Test failed", e);
+            catch (Exception e)
+            {
+                throw new MojoFailureException("Test failed", e);
+            }
+        } else {
+            getLog().info("Running tests using standard Haxe unit testing.");
+
+            try
+            {
+                File testFile = new File(outputDirectory, OutputNamesHelper.getTestOutput(project));
+
+                if (testFile.exists())
+                {
+                    neko.execute(testFile.getAbsolutePath());
+                }
+                else getLog().info("No tests to run.");
+            }
+            catch (NativeProgramException e)
+            {
+                throw new MojoFailureException("Test failed", e);
+            }
         }
     }
 }

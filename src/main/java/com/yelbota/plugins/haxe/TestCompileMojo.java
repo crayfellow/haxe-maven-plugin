@@ -61,19 +61,19 @@ public class TestCompileMojo extends AbstractHaxeMojo {
         super.execute();
 
         if (munitCompiler.getHasRequirements()) {
-            getLog().info("Running tests using MassiveUnit.");
+            getLog().info("Compiling tests using MassiveUnit.");
 
             try
             {
                 munitCompiler.setOutputDirectory(outputDirectory);
-                munitCompiler.compile(project, null, testRunner, true, true);
+                munitCompiler.compile(project, null, "", true, true);
             }
             catch (Exception e)
             {
                 throw new MojoFailureException("Tests compilation failed", e);
             }
         } else {
-            getLog().info("Running tests using standard Haxe unit testing.");
+            getLog().info("Compiling tests using standard Haxe unit testing.");
 
             if (testRunner == null || project.getTestCompileSourceRoots().size() == 0) {
                 getLog().info("No test sources to compile");
