@@ -26,6 +26,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
 
+import java.io.BufferedReader;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import java.io.File;
@@ -47,127 +48,191 @@ public final class NMECompiler {
     @Requirement
     private Logger logger;
 
+    private boolean debug = false;
+    private boolean verbose = false;
+    private boolean generateDoc = false;
+
     private File outputDirectory;
 
-    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose) throws Exception
+    public void initialize(boolean debug, boolean verbose)
     {
-        compile(project, targets, nmml, debug, includeTestSources, verbose, null, false);
+        initialize(debug, verbose, false);
     }
 
-    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose, List<String> additionalArguments) throws Exception
+    public void initialize(boolean debug, boolean verbose, boolean generateDoc)
     {
-        compile(project, targets, nmml, debug, includeTestSources, verbose, additionalArguments, false);
+        this.debug = debug;
+        this.verbose = verbose;
+        this.generateDoc = generateDoc;
     }
 
-    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, boolean verbose, List<String> additionalArguments, boolean generateDoc) throws Exception
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml) throws Exception
+    {
+        compile(project, targets, nmml, null, null, null);
+    }
+
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, List<String> additionalArguments) throws Exception
+    {
+        compile(project, targets, nmml, additionalArguments, null, null);
+    }
+
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, List<String> additionalArguments,
+        String appMain, String appFile) throws Exception
+    {
+        File nmmlFile = assertNMML(nmml);
+        String targetString = null;
+        List<String> list;
+        boolean chxdocIsValid = false;
+        boolean xmlGenerated = false;
+        String buildDir = this.outputDirectory.getAbsolutePath();
+
+        if (generateDoc) {
+            chxdocIsValid = chxdoc != null && chxdoc.getInitialized();
+        }
+        for (CompileTarget target : targets)
+        {
+            targetString = getTargetStringForTarget(target);
+
+            if (targetString != null) {
+                logger.info("Building using '" + nmmlFile.getName() + "' for target '"+targetString+"'.");
+
+                list = getStandardArgumentsList(nmml, targetString, buildDir, appMain, appFile, additionalArguments);
+                execute("update", list);
+
+                list = getStandardArgumentsList(nmml, targetString, buildDir, appMain, appFile, additionalArguments);
+                if (chxdocIsValid && !xmlGenerated) {
+                    list.add("--haxeflag='-xml " + this.outputDirectory.getAbsolutePath() + "/" + TYPES_FILE + "'");
+                    xmlGenerated = true;
+                }
+                execute("build", list);
+            } else {
+                throw new Exception("Encountered an unsupported target to pass to NME: " + target);
+            }
+        }
+
+        if (chxdocIsValid && xmlGenerated) {
+            list = new ArrayList<String>();
+            list.add("--output=docs");
+            list.add("--title=Documentation");
+            list.add("--file=" + TYPES_FILE);
+            chxdoc.execute(list, logger);
+        }
+    }
+
+    public List<String> displayHxml(MavenProject project, Set<CompileTarget> targets, String nmml, List<String> additionalArguments,
+        String appMain, String appFile) throws Exception
+    {
+        assertNMML(nmml);
+        List<String> hxmlOutput = new ArrayList<String>();
+        String buildDir = this.outputDirectory.getAbsolutePath();
+        for (CompileTarget target : targets) {
+            if (hxmlOutput.size() > 0) {
+                hxmlOutput.add("");
+                hxmlOutput.add("--next");
+                hxmlOutput.add("");
+            }
+            hxmlOutput.addAll(displayHxml(project, target, nmml, additionalArguments, appMain, appFile));
+        }
+        return hxmlOutput;
+    }
+
+    public List<String> displayHxml(MavenProject project, CompileTarget target, String nmml, List<String> additionalArguments,
+        String appMain, String appFile) throws Exception
+    {
+        assertNMML(nmml);
+        List<String> hxmlOutput = new ArrayList<String>();
+        String buildDir = this.outputDirectory.getAbsolutePath();
+        String targetString = getTargetStringForTarget(target);
+        if (targetString != null) {
+            hxmlOutput.add("## " + targetString);
+
+            List<String> list = new ArrayList<String>();
+            list.add("display");
+            list.addAll(
+                getStandardArgumentsList(nmml, targetString, buildDir, appMain, appFile, additionalArguments)
+            );
+            BufferedReader br = nme.executeIntoBuffer(list);
+            String line;
+            while ((line = br.readLine()) != null) {
+                hxmlOutput.add(line);
+            }
+        }
+        return hxmlOutput;
+    }
+
+    private void execute(String command, List<String> arguments) throws Exception
+    {
+        List<String> list = new ArrayList<String>();
+        list.add(command);
+        list.addAll(arguments);
+        int returnValue = nme.execute(list, logger);
+
+        if (returnValue > 0) {
+            throw new Exception("NME compiler encountered an error and cannot proceed.");
+        }
+    }
+
+    private File assertNMML(String nmml) throws Exception
     {
         File nmmlFile = new File(nmml);
-        if (nmmlFile.exists()) {
-            String targetString = null;
-            List<String> list;
-            boolean chxdocIsValid = false;
-            boolean xmlGenerated = false;
-            String buildDir = this.outputDirectory.getAbsolutePath();
-
-            if (generateDoc) {
-                chxdocIsValid = chxdoc != null && chxdoc.getInitialized();
-            }
-            for (CompileTarget target : targets)
-            {
-                switch (target)
-                {
-                    case flash:
-                        targetString = "flash";
-                        break;
-                    case html5:
-                        targetString = "html5";
-                        break;
-                    case ios:
-                        targetString = "ios";
-                        break;
-                    case android:
-                        targetString = "android";
-                        break;
-                    case cpp:
-                        targetString = "cpp";
-                        break;
-                }
-
-                if (targetString != null) {
-                    logger.info("Building using '" + nmmlFile.getName() + "' for target '"+targetString+"'.");
-                    int returnValue;
-
-                    list = new ArrayList<String>();
-                    list.add("update");
-                    list.add(nmml);
-                    list.add(targetString);
-                    list.add("--app-path=" + buildDir);
-                    if (debug) {
-                        list.add("-debug");
-                        list.add("--haxeflag='-D log'");
-                    }
-                    if (verbose) {
-                        list.add("-verbose");
-                    }
-
-                    if (additionalArguments != null) {
-                        List<String> compilerArgs = new ArrayList<String>();
-                        for (String arg : additionalArguments) {
-                            compilerArgs.add("--haxeflag='" + arg + "'");
-                        }
-                        list.addAll(compilerArgs);
-                    }
-
-                    returnValue = nme.execute(list, logger);
-
-                    if (returnValue > 0) {
-                        throw new Exception("NME update encountered an error and cannot proceed.");
-                    }
-
-                    list = new ArrayList<String>();
-                    list.add("build");
-                    list.add(nmml);
-                    list.add(targetString);
-                    list.add("--app-path=" + buildDir);
-                    if (chxdocIsValid && !xmlGenerated) {
-                        list.add("--haxeflag='-xml " + this.outputDirectory.getAbsolutePath() + "/" + TYPES_FILE + "'");
-                        xmlGenerated = true;
-                    }
-                    if (debug) {
-                        list.add("-debug");
-                        list.add("--haxeflag='-D log'");
-                    }
-                    if (verbose) {
-                        list.add("-verbose");
-                    }
-
-                    if (additionalArguments != null) {
-                        List<String> compilerArgs = new ArrayList<String>();
-                        for (String arg : additionalArguments) {
-                            compilerArgs.add("--haxeflag='" + arg + "'");
-                        }
-                        list.addAll(compilerArgs);
-                    }
-                    returnValue = nme.execute(list, logger);
-
-                    if (returnValue > 0) {
-                        throw new Exception("NME build encountered an error and cannot proceed.");
-                    }
-                } else {
-                    throw new Exception("Encountered an unsupported target to pass to NME: " + target);
-                }
-            }
-
-            if (chxdocIsValid && xmlGenerated) {
-                list = new ArrayList<String>();
-                list.add("--output=docs");
-                list.add("--title=Documentation");
-                list.add("--file=" + TYPES_FILE);
-                chxdoc.execute(list, logger);
-            }
-        } else {
+        if (!nmmlFile.exists()) {
             throw new Exception("Unable to build using NME. NMML file '" + nmml + "' does not exist.");
         }
+        return nmmlFile;
+    }
+
+    private String getTargetStringForTarget(CompileTarget target)
+    {
+        String targetString = null;
+        switch (target)
+        {
+            case flash:
+                targetString = "flash";
+                break;
+            case html5:
+                targetString = "html5";
+                break;
+            case ios:
+                targetString = "ios";
+                break;
+            case android:
+                targetString = "android";
+                break;
+            case cpp:
+                targetString = "cpp";
+                break;
+        }
+        return targetString;
+    }
+
+    private List<String> getStandardArgumentsList(String nmml, String targetString, String buildDir, String appMain, String appFile, List<String> additionalArguments)
+    {
+        List<String> list = new ArrayList<String>();
+        list.add(nmml);
+        list.add(targetString);
+        list.add("--app-path=" + buildDir);
+        if (appMain != null) {
+            list.add("--app-main=" + appMain);
+        }
+        if (appFile != null) {
+            list.add("--app-file=" + appFile);
+        }
+        if (debug) {
+            list.add("-debug");
+            list.add("--haxeflag='-D log'");
+        }
+        if (verbose) {
+            list.add("-verbose");
+        }
+
+        if (additionalArguments != null) {
+            List<String> compilerArgs = new ArrayList<String>();
+            for (String arg : additionalArguments) {
+                compilerArgs.add("--haxeflag='" + arg + "'");
+            }
+            list.addAll(compilerArgs);
+        }
+        return list;
     }
 
     public void setOutputDirectory(File outputDirectory)

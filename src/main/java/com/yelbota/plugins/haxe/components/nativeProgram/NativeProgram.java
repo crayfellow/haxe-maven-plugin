@@ -21,6 +21,7 @@ import org.codehaus.plexus.logging.Logger;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
+import java.io.BufferedReader;
 
 public interface NativeProgram {
 
@@ -39,6 +40,8 @@ public interface NativeProgram {
     int execute(String arg1, String arg2, String arg3) throws NativeProgramException;
 
     int execute(String arg1, String arg2, String arg3, String arg4) throws NativeProgramException;
+
+    BufferedReader executeIntoBuffer(List<String> arguments) throws NativeProgramException;
 
     Set<String> getPath();
     String getInstalledPath();

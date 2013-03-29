@@ -27,8 +27,9 @@ import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.StringUtils;
 import org.apache.commons.io.FileUtils;
 
-import org.apache.commons.io.FileUtils;
-
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -116,21 +117,42 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     public int execute(List<String> arguments, Logger outputLogger) throws NativeProgramException
     {
+        Process process = getProcessForExecute(arguments);
+        return processExecution(process, outputLogger);
+    }
+
+    public BufferedReader executeIntoBuffer(List<String> arguments) throws NativeProgramException
+    {
+        try
+        {
+            Process process = getProcessForExecute(arguments);
+            InputStream is = process.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            process.waitFor();
+            return br;
+        }
+        catch (InterruptedException e)
+        {
+            throw new NativeProgramException("Program was interrupted", e);
+        }
+    }
+
+    private Process getProcessForExecute(List<String> arguments) throws NativeProgramException
+    {
         try
         {
             String[] environment = getEnvironment();
             arguments = updateArguments(arguments);
             logger.debug("Executing: " + StringUtils.join(arguments.iterator(), " "));
 
-            Process process;
-
-            process = Runtime.getRuntime().exec(
+            Process process = Runtime.getRuntime().exec(
                     arguments.toArray(new String[]{}),
                     environment,
                     outputDirectory
             );
 
-            return processExecution(process, outputLogger);
+            return process;
         }
         catch (IOException e)
         {
@@ -139,7 +161,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         catch (Exception e)
         {
             throw new NativeProgramException("", e);
-        }
+        } 
     }
 
     @Override

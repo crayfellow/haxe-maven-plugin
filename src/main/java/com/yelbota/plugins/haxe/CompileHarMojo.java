@@ -111,7 +111,10 @@ public class CompileHarMojo extends AbstractCompileMojo {
     {
         if (!outputBase.exists()) outputBase.mkdirs();
 
-        if (nmml == null) {
+        if (nmeIsActive()) {
+            nmeCompiler.initialize(debug, verbose);
+            nmeCompiler.compile(project, targets, nmml, compilerFlags);
+        } else {
             EnumMap<CompileTarget, String> compileTargets = new EnumMap<CompileTarget, String>(CompileTarget.class);
 
             for (CompileTarget target : targets)
@@ -135,8 +138,6 @@ public class CompileHarMojo extends AbstractCompileMojo {
                 compileTargets.put(target, outputFile.getAbsolutePath());
             }
             compiler.compile(project, compileTargets, main, debug, false, verbose, compilerFlags);
-        } else {
-            nmeCompiler.compile(project, targets, nmml, debug, false, verbose, compilerFlags);
         }
     }
 }

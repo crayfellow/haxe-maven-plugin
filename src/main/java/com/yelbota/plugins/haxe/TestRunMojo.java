@@ -51,7 +51,7 @@ public final class TestRunMojo extends AbstractHaxeMojo {
             try
             {
                 munitCompiler.setOutputDirectory(outputDirectory);
-                munitCompiler.run(project, null, "", true, true);
+                munitCompiler.run(project);
             }
             catch (Exception e)
             {

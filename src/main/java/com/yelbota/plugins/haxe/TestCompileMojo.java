@@ -26,22 +26,70 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.artifact.Artifact;
 import org.codehaus.plexus.component.annotations.Requirement;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.EnumMap;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.IOException;
+import java.io.File;
+
+import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.*;
+import javax.xml.transform.stream.*;
+import org.apache.commons.io.FileUtils;
+
+import org.xml.sax.*;
+import org.w3c.dom.*;
 
 /**
  * Compile tests with `neko` compile target.
  */
 @Mojo(name = "testCompile", defaultPhase = LifecyclePhase.TEST_COMPILE, requiresDependencyResolution = ResolutionScope.TEST)
-public class TestCompileMojo extends AbstractHaxeMojo {
+public class TestCompileMojo extends AbstractCompileMojo {
+
+    private static final String TEST_RUNNER = "TestRunner";
+    private static final String TEST_HXML = "test.hxml";
+    private static final String TEST_BIN_PATH = "test_bin";
 
     /**
      * Test runner class.
      */
     @Parameter
     private String testRunner;
+
+    /**
+     * Test entrypoint
+     */
+    @Parameter
+    private String testMain;
+
+    /**
+     * Test source class path
+     */
+    @Parameter
+    private String testClasspath;
+
+    @Parameter
+    private String testHxml;
+
+    @Parameter
+    private String testResources;
+
+    @Parameter
+    private String testTemplates;
+
+    @Parameter(required = false)
+    protected Set<CompileTarget> testTargets;
+
+    @Parameter
+    private String testBinPath;
 
     /**
      * Compile with verbose output
@@ -61,16 +109,119 @@ public class TestCompileMojo extends AbstractHaxeMojo {
         super.execute();
 
         if (munitCompiler.getHasRequirements()) {
-            getLog().info("Compiling tests using MassiveUnit.");
 
-            try
-            {
-                munitCompiler.setOutputDirectory(outputDirectory);
-                munitCompiler.compile(project, null, "", true, true);
-            }
-            catch (Exception e)
-            {
-                throw new MojoFailureException("Tests compilation failed", e);
+            if (nmeIsActive() && testTargets != null && testClasspath != null) {
+                getLog().info("Compiling tests for MassiveUnit using NME.");
+
+                Set<String> classPaths = new HashSet<String>();
+                String cleanClassPathList = "";
+                try {
+                    List<String> displayHxml = nmeCompiler.displayHxml(project, testTargets.iterator().next(), nmml, null, null, null);
+                    for (String line : displayHxml) {
+                        String classPath = StringUtils.substringAfter(line, "-cp ");
+                        if (classPath.length() > 0) {
+                            classPaths.add(classPath);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MojoFailureException("Tests compilation failed", e);
+                }
+
+                compilerFlags = new ArrayList<String>();
+                compilerFlags.add("-lib munit");
+                compilerFlags.add("-lib hamcrest");
+                if (classPaths.size() > 0) {
+                    compilerFlags.add("-lib mcover");
+                    compilerFlags.add("-D MCOVER");
+
+                    String mCoverDirective = "--macro mcover.MCover.coverage([''],['";
+                    Iterator<String> it = classPaths.iterator();
+                    String classPath;
+                    while(it.hasNext()) {
+                        classPath = it.next();
+                        if (!StringUtils.contains(classPath, ",")
+                                && StringUtils.indexOf(classPath, "/") != 0) {
+                            if (cleanClassPathList.length() > 0) {
+                                cleanClassPathList += ",";
+                            }
+                            cleanClassPathList += classPath;
+                        }
+                    }
+
+                    mCoverDirective += cleanClassPathList + "'],[''])";
+                    compilerFlags.add(mCoverDirective);
+                }
+                compilerFlags.add("-cp " + testClasspath);
+
+                try
+                {
+                    if (testRunner == null) {
+                        testRunner = TEST_RUNNER;
+                    }
+                    if (testHxml == null) {
+                        testHxml = TEST_HXML;
+                    }
+
+                    List<String> displayHxml = nmeCompiler.displayHxml(project, testTargets, nmml, compilerFlags, testMain, testRunner);
+
+                    String hxmlDump = "";
+                    for (String hxmlLine : displayHxml) {
+                        hxmlDump += hxmlLine + "\n";
+                    }
+
+                    File hxmlFile = new File(outputDirectory, testHxml);
+                    if (hxmlFile.exists()) {
+                        FileUtils.deleteQuietly(hxmlFile);
+                    }
+                    hxmlFile.createNewFile();
+                    FileWriter fw = new FileWriter(hxmlFile.getAbsoluteFile());
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    bw.write(hxmlDump);
+                    bw.close();
+
+                    if (testResources != null) {
+                        File resourcesFile = new File(outputDirectory.getParentFile(), testResources);
+                        File tmpResourcesFile = new File(outputDirectory, "tmp_resources");
+                        tmpResourcesFile.mkdirs();
+                        FileUtils.copyDirectory(resourcesFile, new File(tmpResourcesFile, resourcesFile.getName()));
+                        testResources = tmpResourcesFile.getAbsolutePath();
+                    }
+
+                    if (testBinPath == null) {
+                        testBinPath = TEST_BIN_PATH;
+                    }
+                    File testBinFile = new File(outputDirectory, testBinPath);
+                    testBinPath = testBinFile.getAbsolutePath();
+
+                    munitCompiler.config(
+                        testClasspath,
+                        testBinPath,
+                        testBinPath,
+                        cleanClassPathList,
+                        hxmlFile.getAbsolutePath(),
+                        testResources,
+                        testTemplates);
+                    nmeCompiler.initialize(debug, verbose);
+                    nmeCompiler.compile(project, testTargets, nmml, compilerFlags, testMain, testRunner);
+                }
+                catch (Exception e)
+                {
+                    throw new MojoFailureException("Tests compilation failed", e);
+                }
+            } else {
+                getLog().info("Compiling tests using MassiveUnit.");
+
+                try
+                {
+                    munitCompiler.setOutputDirectory(outputDirectory);
+                    munitCompiler.compile(project, null);
+                }
+                catch (Exception e)
+                {
+                    throw new MojoFailureException("Tests compilation failed", e);
+                }
             }
         } else {
             getLog().info("Compiling tests using standard Haxe unit testing.");

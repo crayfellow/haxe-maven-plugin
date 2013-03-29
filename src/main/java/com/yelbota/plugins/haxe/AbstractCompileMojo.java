@@ -86,15 +86,20 @@ public abstract class AbstractCompileMojo extends AbstractHaxeMojo {
         super.execute();
 
         compiler.setOutputDirectory(outputDirectory);
-        if (nmml != null) {
+        if (nmeIsActive()) {
             nmeCompiler.setOutputDirectory(outputDirectory);
         }
+    }
+
+    protected boolean nmeIsActive()
+    {
+        return nmml != null;
     }
 
     @Override
     protected void initialize(MavenProject project, ArtifactRepository localRepository) throws Exception
     {
-        if (nmml != null) {
+        if (nmeIsActive()) {
             File nmmlFile = new File(outputDirectory.getParentFile(), nmml);
             if (nmmlFile.exists()) {
                 nmml = nmmlFile.getAbsolutePath();

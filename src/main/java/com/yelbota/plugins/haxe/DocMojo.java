@@ -47,7 +47,8 @@ public class DocMojo extends AbstractCompileMojo {
         try
         {
 	        if (nmml != null) {
-	            nmeCompiler.compile(project, targets, nmml, debug, false, verbose, compilerFlags, true);
+                nmeCompiler.initialize(debug, verbose, true);
+	            nmeCompiler.compile(project, targets, nmml, compilerFlags);
 	        }
         }
         catch (Exception e)

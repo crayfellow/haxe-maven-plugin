@@ -45,53 +45,98 @@ public final class MUnitCompiler {
 
     private File outputDirectory;
 
-    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources) throws Exception
+    private boolean debug = false;
+    private boolean verbose = false;
+    private boolean generateDoc = false;
+
+    public void initialize(boolean debug, boolean verbose)
     {
-        compile(project, targets, nmml, debug, includeTestSources, null);
+        this.debug = debug;
+        this.verbose = verbose;
     }
 
-    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
+    public void config(String src, String bin, String report, String classPaths, String hxml, String resources, String templates) throws Exception
     {
-        runWithArgument("-norun", additionalArguments);
-    }
+        List<String> list;
 
-    public void run(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources) throws Exception
-    {
-        run(project, targets, nmml, debug, includeTestSources, null);
-    }
+        list = new ArrayList<String>();
+        list.add("-delete");
+        runWithArguments("config", list);
 
-    public void run(MavenProject project, Set<CompileTarget> targets, String nmml, boolean debug, boolean includeTestSources, List<String> additionalArguments) throws Exception
-    {
-        runWithArgument("-nogen", additionalArguments);
-    }
-
-    private void runWithArgument(String argument, List<String> additionalArguments) throws Exception
-    {
-        List<String> arguments = updateArguments(additionalArguments);
-        if (argument != null) {
-            arguments.add(argument);
+        list = new ArrayList<String>();
+        if (src != null) {
+            list.add("-src");
+            list.add(src);
         }
-        int returnValue = munit.execute(arguments, logger);
+        if (bin != null) {
+            list.add("-bin");
+            list.add(bin);
+        }
+        if (report != null) {
+            list.add("-report");
+            list.add(report);
+        }
+        if (classPaths != null && classPaths.length() > 0) {
+            list.add("-classPaths");
+            list.add(classPaths);
+        }
+        if (hxml != null) {
+            list.add("-hxml");
+            list.add(hxml);
+        }
+        if (resources != null) {
+            list.add("-resources");
+            list.add(resources);
+        }
+        if (templates != null) {
+            list.add("-templates");
+            list.add(templates);
+        }
+        runWithArguments("config", list);
+    } 
+
+    public void compile(MavenProject project, Set<CompileTarget> targets) throws Exception
+    {
+        compile(project, targets, null);
+    }
+
+    public void compile(MavenProject project, Set<CompileTarget> targets, List<String> additionalArguments) throws Exception
+    {
+        List<String> list = new ArrayList<String>();
+        list.add("test.hxml");
+        list.add("test_src");
+        list.add("test_bin");
+        list.add("test_bin");
+        list.add("-coverage");
+        list.add("-result-exit-code");
+        list.add("-norun");
+        if (additionalArguments != null) {
+            list.addAll(additionalArguments);
+        }
+        runWithArguments("test", list);
+    }
+
+    public void run(MavenProject project) throws Exception
+    {
+        List<String> list = new ArrayList<String>();
+        //list.add(this.outputDirectory.getAbsolutePath());
+        //list.add(testReportPath);
+        list.add("-result-exit-code");
+        runWithArguments("run", list);
+    }
+
+    private void runWithArguments(String command, List<String> arguments) throws Exception
+    {
+        List<String> list = new ArrayList<String>();
+        if (command != null) {
+            list.add(command);
+        }
+        list.addAll(arguments);
+        int returnValue = munit.execute(list, logger);
 
         if (returnValue > 0) {
             throw new Exception("MassiveUnit test encountered an error and cannot proceed.");
         }
-    }
-
-    private List<String> updateArguments(List<String> additionalArguments)
-    {     
-        List<String> list = new ArrayList<String>();
-        list.add("test");
-        list.add("test.hxml");
-        list.add("test_src");
-        list.add("test_bin");
-        list.add("test_report");
-        list.add("-coverage");
-        list.add("-result-exit-code");
-        if (additionalArguments != null) {
-            list.addAll(additionalArguments);
-        }
-        return list;
     }
 
     public boolean getHasRequirements()
