@@ -225,6 +225,11 @@ public abstract class AbstractNativeProgram implements NativeProgram {
     //
     //-------------------------------------------------------------------------
 
+    protected CleanStream.CleanStreamType getErrorStream()
+    {
+        return CleanStream.CleanStreamType.ERROR;
+    }
+
     protected abstract List<String> updateArguments(List<String> arguments);
 
     protected int processExecution(Process process, Logger outputLogger) throws NativeProgramException
@@ -233,7 +238,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         {
             CleanStream cleanError = new CleanStream(
                     process.getErrorStream(),
-                    outputLogger, CleanStream.CleanStreamType.ERROR, myName()
+                    outputLogger, getErrorStream(), myName()
             );
 
             CleanStream cleanOutput = new CleanStream(

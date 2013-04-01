@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.yelbota.plugins.haxe.utils.CleanStream;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
 @Component(role = NativeProgram.class, hint = "munit")
@@ -56,6 +57,12 @@ public final class MUnitNativeProgram extends AbstractNativeProgram {
             System.out.println("Unable to set version for haxelib '"+artifact.getArtifactId()+"'. " + e);
         }
 	}
+
+    @Override
+    protected CleanStream.CleanStreamType getErrorStream()
+    {
+        return CleanStream.CleanStreamType.DEBUG;
+    }
 
     @Override
     protected List<String> updateArguments(List<String> arguments)
