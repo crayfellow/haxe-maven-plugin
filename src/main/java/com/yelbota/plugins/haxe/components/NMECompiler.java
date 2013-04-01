@@ -79,6 +79,12 @@ public final class NMECompiler {
     public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, List<String> additionalArguments,
         String appMain, String appFile) throws Exception
     {
+        compile(project, targets, nmml, additionalArguments, null, null, false);
+    }
+
+    public void compile(MavenProject project, Set<CompileTarget> targets, String nmml, List<String> additionalArguments,
+        String appMain, String appFile, boolean update) throws Exception
+    {
         File nmmlFile = assertNMML(nmml);
         String targetString = null;
         List<String> list;
@@ -97,9 +103,9 @@ public final class NMECompiler {
                 logger.info("Building using '" + nmmlFile.getName() + "' for target '"+targetString+"'.");
 
                 list = getStandardArgumentsList(nmml, targetString, buildDir, appMain, appFile, additionalArguments);
-                execute("update", list);
-
-                list = getStandardArgumentsList(nmml, targetString, buildDir, appMain, appFile, additionalArguments);
+                if (update) {
+                    execute("update", list);
+                }
                 if (chxdocIsValid && !xmlGenerated) {
                     list.add("--haxeflag='-xml " + this.outputDirectory.getAbsolutePath() + "/" + TYPES_FILE + "'");
                     xmlGenerated = true;

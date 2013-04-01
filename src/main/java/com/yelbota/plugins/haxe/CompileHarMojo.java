@@ -113,7 +113,7 @@ public class CompileHarMojo extends AbstractCompileMojo {
 
         if (nmeIsActive()) {
             nmeCompiler.initialize(debug, verbose);
-            nmeCompiler.compile(project, targets, nmml, compilerFlags);
+            nmeCompiler.compile(project, targets, nmml, compilerFlags, null, null, true);
         } else {
             EnumMap<CompileTarget, String> compileTargets = new EnumMap<CompileTarget, String>(CompileTarget.class);
 
