@@ -40,6 +40,9 @@ public final class TestRunMojo extends AbstractHaxeMojo {
     @Component
     private MUnitCompiler munitCompiler;
 
+    @Parameter
+    private String testBrowser;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
@@ -51,7 +54,7 @@ public final class TestRunMojo extends AbstractHaxeMojo {
             try
             {
                 munitCompiler.setOutputDirectory(outputDirectory);
-                munitCompiler.run(project);
+                munitCompiler.run(project, testBrowser);
             }
             catch (Exception e)
             {

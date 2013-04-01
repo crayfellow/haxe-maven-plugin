@@ -116,12 +116,16 @@ public final class MUnitCompiler {
         runWithArguments("test", list);
     }
 
-    public void run(MavenProject project) throws Exception
+    public void run(MavenProject project, String testBrowser) throws Exception
     {
         List<String> list = new ArrayList<String>();
         //list.add(this.outputDirectory.getAbsolutePath());
         //list.add(testReportPath);
         list.add("-result-exit-code");
+        if (testBrowser != null) {
+            list.add("-browser");
+            list.add(testBrowser);
+        }
         runWithArguments("run", list);
     }
 
