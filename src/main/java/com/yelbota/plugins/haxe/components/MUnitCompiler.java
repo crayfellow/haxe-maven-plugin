@@ -126,10 +126,11 @@ public final class MUnitCompiler {
         //list.add(this.outputDirectory.getAbsolutePath());
         //list.add(testReportPath);
         list.add("-result-exit-code");
+        list.add("-kill-browser");
         if (testBrowser != null) {
             list.add("-browser");
             list.add(testBrowser);
-        }
+        } 
         runWithArguments("run", list);
     }
 
