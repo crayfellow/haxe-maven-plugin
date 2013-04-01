@@ -116,8 +116,12 @@ public final class MUnitCompiler {
         runWithArguments("test", list);
     }
 
-    public void run(MavenProject project, String testBrowser) throws Exception
+    public void run(MavenProject project, String testBrowser, String testDisplay) throws Exception
     {
+        if (testDisplay != null) {
+            munit.setDisplay(testDisplay);
+        }
+
         List<String> list = new ArrayList<String>();
         //list.add(this.outputDirectory.getAbsolutePath());
         //list.add(testReportPath);

@@ -27,6 +27,8 @@ import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.StringUtils;
 import org.apache.commons.io.FileUtils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -71,6 +73,8 @@ public abstract class AbstractNativeProgram implements NativeProgram {
     protected Set<String> path;
 
     protected File directory;
+
+    protected String display;
 
     private boolean initialized = false;
 
@@ -201,10 +205,14 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     protected String[] getEnvironment()
     {
-        return new String[]{
+        String[] env = new String[]{
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };
+        if (this.display != null) {
+            ArrayUtils.add(env, "DISPLAY=" + this.display);
+        }
+        return env;
     }
 
     //-------------------------------------------------------------------------
@@ -321,6 +329,11 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         // Add current directory to path
         path.add(directoryPath);
         return unpackDirectory;
+    }
+
+    public void setDisplay(String display)
+    {
+        this.display = display;
     }
 
     protected boolean isWindows()

@@ -46,4 +46,5 @@ public interface NativeProgram {
     Set<String> getPath();
     String getInstalledPath();
     boolean getInitialized();
+    void setDisplay(String display);
 }

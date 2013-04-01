@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
@@ -87,10 +88,8 @@ public final class MUnitNativeProgram extends AbstractNativeProgram {
                 "LD_LIBRARY_PATH=" + nekoHome + ":.",
                 "HAXE_LIBRARY_PATH=" + haxeHome + "/std:.",
                 "HAXE_STD_PATH=" + haxeHome + "/std:.",
-                "NMEPATH=" + nmeHome,
-                "PATH=" + StringUtils.join(path.iterator(), ":"),
-                "HOME=" + pluginHome.getAbsolutePath()
+                "NMEPATH=" + nmeHome
         };
-        return env;
+        return ArrayUtils.addAll(super.getEnvironment(), env);
     }
 }

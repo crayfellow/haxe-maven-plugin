@@ -43,18 +43,28 @@ public final class TestRunMojo extends AbstractHaxeMojo {
     @Parameter
     private String testBrowser;
 
+    @Parameter
+    private String testDisplay;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         super.execute();
 
         if (munitCompiler.getHasRequirements()) {
-            getLog().info("Running tests using MassiveUnit.");
+            String outputInfo = "Running tests using MassiveUnit.";
+            if (testBrowser != null) {
+                outputInfo += "\n Using browser '"+testBrowser+"'";
+            }
+            if (testDisplay != null) {
+                outputInfo += "\n on display '"+testDisplay+"'";
+            }
+            getLog().info(outputInfo);
 
             try
             {
                 munitCompiler.setOutputDirectory(outputDirectory);
-                munitCompiler.run(project, testBrowser);
+                munitCompiler.run(project, testBrowser, testDisplay);
             }
             catch (Exception e)
             {
