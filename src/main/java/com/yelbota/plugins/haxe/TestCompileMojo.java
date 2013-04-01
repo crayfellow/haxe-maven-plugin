@@ -115,6 +115,9 @@ public class TestCompileMojo extends AbstractCompileMojo {
 
             if (nmeIsActive() && testTargets != null && testClasspath != null) {
                 getLog().info("Compiling tests for MassiveUnit using NME.");
+                if (testCoverage) {
+                    getLog().info(" Integrating with MassiveCover for code coverage.");
+                }
 
                 Set<String> classPaths = new HashSet<String>();
                 String cleanClassPathList = "";
