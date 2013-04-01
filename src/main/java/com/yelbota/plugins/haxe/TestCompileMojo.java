@@ -98,7 +98,7 @@ public class TestCompileMojo extends AbstractCompileMojo {
     protected boolean verbose;
 
     @Parameter
-    protected boolean coverage = false;
+    protected boolean testCoverage = false;
 
     @Component
     private HaxeCompiler haxeCompiler;
@@ -135,7 +135,7 @@ public class TestCompileMojo extends AbstractCompileMojo {
                 compilerFlags = new ArrayList<String>();
                 compilerFlags.add("-lib munit");
                 compilerFlags.add("-lib hamcrest");
-                if (coverage && classPaths.size() > 0) {
+                if (testCoverage && classPaths.size() > 0) {
                     compilerFlags.add("-lib mcover");
                     compilerFlags.add("-D MCOVER");
 
