@@ -214,7 +214,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
                 "HOME=" + pluginHome.getAbsolutePath()
         };
         if (this.display != null) {
-            ArrayUtils.add(env, "DISPLAY=" + this.display);
+            env = ArrayUtils.add(env, "DISPLAY=" + this.display);
         }
         return env;
     }
