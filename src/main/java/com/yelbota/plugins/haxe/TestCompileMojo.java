@@ -114,10 +114,9 @@ public class TestCompileMojo extends AbstractCompileMojo {
         if (munitCompiler.getHasRequirements()) {
 
             if (nmeIsActive() && testTargets != null && testClasspath != null) {
-                getLog().info("Compiling tests for MassiveUnit using NME.");
-                if (testCoverage) {
-                    getLog().info(" Integrating with MassiveCover for code coverage.");
-                }
+                String logInfo = "Compiling tests for MassiveUnit using NME ";
+                logInfo += (testCoverage ? "WITH code coverage" : "WITHOUT code coverage") + ".";
+                getLog().info(logInfo);
 
                 Set<String> classPaths = new HashSet<String>();
                 String cleanClassPathList = "";
@@ -177,7 +176,7 @@ public class TestCompileMojo extends AbstractCompileMojo {
                         hxmlDump += hxmlLine + "\n";
                     }
 
-                    File hxmlFile = new File(outputDirectory, testHxml);
+                    File hxmlFile = new File(outputDirectory.getParentFile(), testHxml);
                     if (hxmlFile.exists()) {
                         FileUtils.deleteQuietly(hxmlFile);
                     }
@@ -210,7 +209,7 @@ public class TestCompileMojo extends AbstractCompileMojo {
                         testResources,
                         testTemplates);
                     nmeCompiler.initialize(debug, verbose);
-                    nmeCompiler.compile(project, testTargets, nmml, compilerFlags, testMain, testRunner);
+                    nmeCompiler.compile(project, testTargets, nmml, compilerFlags, testMain, testRunner, true);
                 }
                 catch (Exception e)
                 {
