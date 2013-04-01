@@ -116,7 +116,7 @@ public final class MUnitCompiler {
         runWithArguments("test", list);
     }
 
-    public void run(MavenProject project, String testBrowser, String testDisplay) throws Exception
+    public void run(MavenProject project, String testBrowser, boolean testKillBrowser, String testDisplay) throws Exception
     {
         if (testDisplay != null) {
             munit.setDisplay(testDisplay);
@@ -126,7 +126,9 @@ public final class MUnitCompiler {
         //list.add(this.outputDirectory.getAbsolutePath());
         //list.add(testReportPath);
         list.add("-result-exit-code");
-        list.add("-kill-browser");
+        if (testKillBrowser) {
+            list.add("-kill-browser");
+        }
         if (testBrowser != null) {
             list.add("-browser");
             list.add(testBrowser);

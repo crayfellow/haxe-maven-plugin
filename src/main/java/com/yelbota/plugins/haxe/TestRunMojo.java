@@ -44,6 +44,9 @@ public final class TestRunMojo extends AbstractHaxeMojo {
     private String testBrowser;
 
     @Parameter
+    private boolean testKillBrowser;
+
+    @Parameter
     private String testDisplay;
 
     @Override
@@ -64,7 +67,7 @@ public final class TestRunMojo extends AbstractHaxeMojo {
             try
             {
                 munitCompiler.setOutputDirectory(outputDirectory);
-                munitCompiler.run(project, testBrowser, testDisplay);
+                munitCompiler.run(project, testBrowser, testKillBrowser, testDisplay);
             }
             catch (Exception e)
             {
