@@ -25,6 +25,7 @@ import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import javax.xml.bind.JAXBContext;
@@ -234,7 +235,11 @@ public final class NMECompiler {
         if (additionalArguments != null) {
             List<String> compilerArgs = new ArrayList<String>();
             for (String arg : additionalArguments) {
-                compilerArgs.add("--haxeflag='" + arg + "'");
+                if (StringUtils.startsWith(arg, "--macro")) {
+                    compilerArgs.add(arg);
+                } else {
+                    compilerArgs.add("--haxeflag='" + arg + "'");
+                }
             }
             list.addAll(compilerArgs);
         }
