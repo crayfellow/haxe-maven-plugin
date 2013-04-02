@@ -235,11 +235,11 @@ public final class NMECompiler {
         if (additionalArguments != null) {
             List<String> compilerArgs = new ArrayList<String>();
             for (String arg : additionalArguments) {
-                if (StringUtils.startsWith(arg, "--macro")) {
+                /*if (StringUtils.startsWith(arg, "--macro")) {
                     compilerArgs.add(arg);
-                } else {
+                } else {*/
                     compilerArgs.add("--haxeflag='" + arg + "'");
-                }
+                //}
             }
             list.addAll(compilerArgs);
         }
