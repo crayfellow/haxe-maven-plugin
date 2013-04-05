@@ -31,6 +31,7 @@ private String myname = "stream";
     private InputStream is;
     private CleanStreamType type = null;
     private Logger log = null;
+    private int count = 0;
 
     public CleanStream(InputStream is)
     {
@@ -58,6 +59,11 @@ private String myname = "stream";
         this.myname = myname;
     }
 
+    public int getCount()
+    {
+        return this.count;
+    }
+
     public void run()
     {
         try
@@ -68,6 +74,7 @@ private String myname = "stream";
 
             while ((line = br.readLine()) != null)
             {
+                count++;
                 if (log != null)
                 {
                     if (type == null) {

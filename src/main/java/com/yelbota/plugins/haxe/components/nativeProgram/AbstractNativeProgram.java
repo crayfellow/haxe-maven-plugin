@@ -132,7 +132,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
     public int execute(List<String> arguments, File workingDirectory, Logger outputLogger) throws NativeProgramException
     {
         Process process = getProcessForExecute(arguments, workingDirectory);
-        return processExecution(process, outputLogger);
+        return processExecution(process, outputLogger, false);
     }
 
     public BufferedReader executeIntoBuffer(List<String> arguments) throws NativeProgramException
@@ -251,7 +251,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     protected abstract List<String> updateArguments(List<String> arguments);
 
-    protected int processExecution(Process process, Logger outputLogger) throws NativeProgramException
+    protected int processExecution(Process process, Logger outputLogger, boolean tolerateErrors) throws NativeProgramException
     {
         try
         {
@@ -268,7 +268,16 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             cleanError.start();
             cleanOutput.start();
 
-            return process.waitFor();
+            int returnValue = process.waitFor();
+
+            if (!tolerateErrors) {
+                int errorCount = cleanError.getCount();
+                if (returnValue == 0 && errorCount > 0) {
+                    returnValue = errorCount;
+                }
+            }
+
+            return returnValue;
         }
         catch (InterruptedException e)
         {

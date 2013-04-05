@@ -16,6 +16,7 @@
 package com.yelbota.plugins.haxe.components;
 
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
+import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
 import com.yelbota.plugins.haxe.utils.CompileTarget;
 import com.yelbota.plugins.haxe.utils.HarMetadata;
 import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
@@ -25,6 +26,7 @@ import org.codehaus.plexus.archiver.zip.ZipUnArchiver;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.logging.Logger;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -33,12 +35,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
 @Component(role = HaxeCompiler.class)
 public final class HaxeCompiler {
 
     @Requirement(hint = "haxe")
     private NativeProgram haxe;
+
+    @Requirement(hint = "haxelib")
+    private HaxelibNativeProgram haxelib;
 
     @Requirement
     private Logger logger;
@@ -47,9 +57,52 @@ public final class HaxeCompiler {
 
     public void compileHxml(MavenProject project, File hxml, File workingDirectory) throws Exception
     {
-        List<String> args = new ArrayList<String>();
+        List<String> args;
+        int returnValue;
+
+        // get the list of libs in the hxml        
+        String haxelibToInstall;
+        Set<String> haxelibsToInstall = new HashSet<String>();
+        BufferedReader reader = new BufferedReader(new FileReader(hxml.getAbsolutePath()));
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            haxelibToInstall = StringUtils.substringAfter(line, "-lib ");
+            if (haxelibToInstall.length() > 0) {
+                haxelibsToInstall.add(haxelibToInstall);
+            }
+        }
+
+        // go through the list and if they are not installed, install them now
+        Iterator<String> it = haxelibsToInstall.iterator();
+        while(it.hasNext()) {
+            haxelibToInstall = it.next();
+
+            args = new ArrayList<String>();
+            args.add("path");
+            args.add(haxelibToInstall);
+            returnValue = haxelib.execute(args);
+
+            if (returnValue > 0) {
+                args = new ArrayList<String>();
+                args.add("install");
+                args.add(haxelibToInstall);
+                logger.info("Installing haxelib '"+haxelibToInstall+"'");
+                returnValue = haxelib.execute(args, logger);
+                if (returnValue > 0) {
+                    throw new Exception("Haxelib was installing '"+haxelibToInstall+"', but has encountered an error and cannot proceed.");
+                }
+            }
+        }
+
+        // now that the libs are installed, compile the project
+        args = new ArrayList<String>();
         args.add(hxml.getAbsolutePath());
-        haxe.execute(args, workingDirectory);
+
+        logger.info("Building '"+hxml.getName()+"'");
+        returnValue = haxe.execute(args, workingDirectory);
+        if (returnValue > 0) {
+            throw new Exception("Haxe compiler was building '"+hxml.getName()+"', but has encountered an error and cannot proceed.");
+        }
     }
 
     public void compile(MavenProject project, Map<CompileTarget, String> targets, String main, boolean debug, boolean includeTestSources, boolean verbose) throws Exception

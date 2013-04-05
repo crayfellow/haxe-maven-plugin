@@ -41,6 +41,9 @@ public final class HaxeNativeProgram extends AbstractNativeProgram {
     }
 
     @Override
+    protected String myName() { return "haxe"; }
+
+    @Override
     protected String[] getEnvironment()
     {
     	String haxeHome = getInstalledPath();

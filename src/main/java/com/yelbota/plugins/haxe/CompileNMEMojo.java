@@ -64,7 +64,6 @@ public class CompileNMEMojo extends AbstractCompileMojo {
         if (hxml.exists()) {
             try
             {
-                getLog().info("Building '"+hxml.getName()+"'");
                 compiler.compileHxml(project, hxml, hxml.getParentFile());
             }
             catch (Exception e)
@@ -79,7 +78,6 @@ public class CompileNMEMojo extends AbstractCompileMojo {
         if (hxml.exists()) {
             try
             {
-                getLog().info("Building '"+hxml.getName()+"'");
                 compiler.compileHxml(project, hxml, hxml.getParentFile());
             }
             catch (Exception e)
