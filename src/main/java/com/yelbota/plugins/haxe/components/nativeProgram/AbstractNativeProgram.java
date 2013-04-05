@@ -116,12 +116,22 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     public int execute(List<String> arguments) throws NativeProgramException
     {
-        return execute(arguments, logger);
+        return execute(arguments, null, null);
+    }
+
+    public int execute(List<String> arguments, File workingDirectory) throws NativeProgramException
+    {
+        return execute(arguments, workingDirectory, logger);
     }
 
     public int execute(List<String> arguments, Logger outputLogger) throws NativeProgramException
     {
-        Process process = getProcessForExecute(arguments);
+        return execute(arguments, null, outputLogger);
+    }
+
+    public int execute(List<String> arguments, File workingDirectory, Logger outputLogger) throws NativeProgramException
+    {
+        Process process = getProcessForExecute(arguments, workingDirectory);
         return processExecution(process, outputLogger);
     }
 
@@ -144,11 +154,20 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     private Process getProcessForExecute(List<String> arguments) throws NativeProgramException
     {
+        return getProcessForExecute(arguments, null);
+    }
+
+    private Process getProcessForExecute(List<String> arguments, File workingDirectory) throws NativeProgramException
+    {
         try
         {
             String[] environment = getEnvironment();
             arguments = updateArguments(arguments);
-            logger.debug("Executing: " + StringUtils.join(arguments.iterator(), " "));
+            if (workingDirectory == null || !workingDirectory.exists()) {
+                workingDirectory = outputDirectory;
+            }
+            logger.debug("Executing in '"+workingDirectory.getAbsolutePath()+"': " + StringUtils.join(arguments.iterator(), " "));
+
             for( int i = 0; i <= environment.length - 1; i++)
             {
                 logger.debug(" " + environment[i]);
@@ -157,7 +176,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
             Process process = Runtime.getRuntime().exec(
                     arguments.toArray(new String[]{}),
                     environment,
-                    outputDirectory
+                    workingDirectory
             );
 
             return process;

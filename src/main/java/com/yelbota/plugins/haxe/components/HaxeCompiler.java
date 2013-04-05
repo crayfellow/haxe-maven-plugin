@@ -45,6 +45,13 @@ public final class HaxeCompiler {
 
     private File outputDirectory;
 
+    public void compileHxml(MavenProject project, File hxml, File workingDirectory) throws Exception
+    {
+        List<String> args = new ArrayList<String>();
+        args.add(hxml.getAbsolutePath());
+        haxe.execute(args, workingDirectory);
+    }
+
     public void compile(MavenProject project, Map<CompileTarget, String> targets, String main, boolean debug, boolean includeTestSources, boolean verbose) throws Exception
     {
         compile(project, targets, main, debug, includeTestSources, verbose, null);

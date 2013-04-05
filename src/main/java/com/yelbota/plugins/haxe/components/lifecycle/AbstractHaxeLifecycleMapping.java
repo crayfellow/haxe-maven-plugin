@@ -38,10 +38,12 @@ public abstract class AbstractHaxeLifecycleMapping
         }
 
         lifecycleMap = new LinkedHashMap<String, Lifecycle>();
-        Lifecycle lifecycle = new Lifecycle();
+        Lifecycle lifecycle;
+        Map<String, String> phases;
 
+        lifecycle = new Lifecycle();
         lifecycle.setId( "default" );
-        Map<String, String> phases = new LinkedHashMap<String, String>();
+        phases = new LinkedHashMap<String, String>();
         phases.put( "doc", "com.yelbota.plugins:haxe-maven-plugin:doc" );
         //phases.put( "clean", "com.yelbota.plugins:haxe-maven-plugin:clean" );
         phases.put( "process-resources", "org.apache.maven.plugins:maven-resources-plugin:resources" );
@@ -59,8 +61,15 @@ public abstract class AbstractHaxeLifecycleMapping
         phases.put( "install", "org.apache.maven.plugins:maven-install-plugin:install" );
         phases.put( "deploy", "org.apache.maven.plugins:maven-deploy-plugin:deploy" );
         lifecycle.setPhases( phases );
-
         lifecycleMap.put( "default", lifecycle );
+
+        lifecycle = new Lifecycle();
+        lifecycle.setId( "buildNME" );
+        phases = new LinkedHashMap<String, String>();
+
+        lifecycle.setPhases( phases );
+        lifecycleMap.put( "buildNME", lifecycle );
+
         return lifecycleMap;
     }
 

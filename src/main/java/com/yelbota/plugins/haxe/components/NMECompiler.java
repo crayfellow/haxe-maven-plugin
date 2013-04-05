@@ -104,14 +104,16 @@ public final class NMECompiler {
                 logger.info("Building using '" + nmmlFile.getName() + "' for target '"+targetString+"'.");
 
                 list = getStandardArgumentsList(nmml, targetString, buildDir, appMain, appFile, additionalArguments);
-                if (update) {
+                if (update || target == CompileTarget.ios) {
                     execute("update", list);
                 }
                 if (chxdocIsValid && !xmlGenerated) {
                     list.add("--haxeflag='-xml " + this.outputDirectory.getAbsolutePath() + "/" + TYPES_FILE + "'");
                     xmlGenerated = true;
                 }
-                execute("build", list);
+                if (target != CompileTarget.ios) {
+                    execute("build", list);
+                }
             } else {
                 throw new Exception("Encountered an unsupported target to pass to NME: " + target);
             }
@@ -235,11 +237,12 @@ public final class NMECompiler {
         if (additionalArguments != null) {
             List<String> compilerArgs = new ArrayList<String>();
             for (String arg : additionalArguments) {
-                /*if (StringUtils.startsWith(arg, "--macro")) {
-                    compilerArgs.add(arg);
-                } else {*/
-                    compilerArgs.add("--haxeflag='" + arg + "'");
-                //}
+                if (StringUtils.startsWith(arg, "--macro ")) {
+                    compilerArgs.add(StringUtils.replace(arg, "--macro ", "--macro="));
+                } else {
+                    String haxeFlag = "--haxeflag='" +  arg + "'";
+                    compilerArgs.add(haxeFlag);
+                }
             }
             list.addAll(compilerArgs);
         }

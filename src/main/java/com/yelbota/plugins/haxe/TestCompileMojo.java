@@ -141,7 +141,7 @@ public class TestCompileMojo extends AbstractCompileMojo {
                     compilerFlags.add("-lib mcover");
                     compilerFlags.add("-D MCOVER");
 
-                    String mCoverDirective = "--macro mcover.MCover.coverage([''''''],['''";
+                    String mCoverDirective = "--macro mcover.MCover.coverage\\([\\'\\'],[\\'";
                     Iterator<String> it = classPaths.iterator();
                     String classPath;
                     while(it.hasNext()) {
@@ -155,7 +155,7 @@ public class TestCompileMojo extends AbstractCompileMojo {
                         }
                     }
 
-                    mCoverDirective += cleanClassPathList + "'''],[''''''])";
+                    mCoverDirective += cleanClassPathList + "\\'],[\\'\\']\\)";
                     compilerFlags.add(mCoverDirective);
                 }
                 compilerFlags.add("-cp " + testClasspath);

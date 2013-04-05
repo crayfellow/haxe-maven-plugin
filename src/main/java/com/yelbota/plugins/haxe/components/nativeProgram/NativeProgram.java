@@ -29,7 +29,11 @@ public interface NativeProgram {
 
     int execute(List<String> arguments) throws NativeProgramException;
 
+    int execute(List<String> arguments, File workingDirectory) throws NativeProgramException;
+
     int execute(List<String> arguments, Logger outputLogger) throws NativeProgramException;
+
+    int execute(List<String> arguments, File workingDirectory, Logger outputLogger) throws NativeProgramException;
 
     int execute(String[] arguments) throws NativeProgramException;
 
