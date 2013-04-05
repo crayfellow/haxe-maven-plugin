@@ -131,8 +131,13 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     public int execute(List<String> arguments, File workingDirectory, Logger outputLogger) throws NativeProgramException
     {
+        return execute(arguments, workingDirectory, outputLogger, false);
+    }
+
+    public int execute(List<String> arguments, File workingDirectory, Logger outputLogger, boolean tolerateErrors) throws NativeProgramException
+    {
         Process process = getProcessForExecute(arguments, workingDirectory);
-        return processExecution(process, outputLogger, false);
+        return processExecution(process, outputLogger, tolerateErrors);
     }
 
     public BufferedReader executeIntoBuffer(List<String> arguments) throws NativeProgramException

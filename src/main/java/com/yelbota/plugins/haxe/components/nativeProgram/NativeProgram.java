@@ -35,6 +35,8 @@ public interface NativeProgram {
 
     int execute(List<String> arguments, File workingDirectory, Logger outputLogger) throws NativeProgramException;
 
+    int execute(List<String> arguments, File workingDirectory, Logger outputLogger, boolean tolerateErrors) throws NativeProgramException;
+
     int execute(String[] arguments) throws NativeProgramException;
 
     int execute(String arg1) throws NativeProgramException;

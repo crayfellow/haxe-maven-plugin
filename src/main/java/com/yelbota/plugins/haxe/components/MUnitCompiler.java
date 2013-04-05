@@ -143,7 +143,7 @@ public final class MUnitCompiler {
             list.add(command);
         }
         list.addAll(arguments);
-        int returnValue = munit.execute(list, logger);
+        int returnValue = munit.execute(list, null, logger, true);
 
         if (returnValue > 0) {
             throw new Exception("MassiveUnit test encountered an error and cannot proceed.");
