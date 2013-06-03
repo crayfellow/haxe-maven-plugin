@@ -15,7 +15,7 @@
  */
 package com.yelbota.plugins.haxe;
 
-import com.yelbota.plugins.haxe.components.NMECompiler;
+import com.yelbota.plugins.haxe.components.OpenFLCompiler;
 import com.yelbota.plugins.haxe.utils.CompileTarget;
 import com.yelbota.plugins.haxe.utils.HarMetadata;
 import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
@@ -44,8 +44,8 @@ import java.util.List;
  * Builds a `har` package. This is a zip archive which
  * contains metainfo about supported compilation targets.
  */
-@Mojo(name = "compileNME", defaultPhase = LifecyclePhase.COMPILE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
-public class CompileNMEMojo extends AbstractCompileMojo {
+@Mojo(name = "compileOpenFL", defaultPhase = LifecyclePhase.COMPILE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+public class CompileOpenFLMojo extends AbstractCompileMojo {
 
     @Parameter(required = true)
     protected String buildCommandLineHxml;

@@ -36,12 +36,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Component(role = NMECompiler.class)
-public final class NMECompiler {
+@Component(role = OpenFLCompiler.class)
+public final class OpenFLCompiler {
     private static final String TYPES_FILE = "types.xml";
 
-    @Requirement(hint = "nme")
-    private NativeProgram nme;
+    @Requirement(hint = "openfl")
+    private NativeProgram openfl;
 
     @Requirement(hint = "chxdoc")
     private NativeProgram chxdoc;
@@ -115,7 +115,7 @@ public final class NMECompiler {
                     execute("build", list);
                 }
             } else {
-                throw new Exception("Encountered an unsupported target to pass to NME: " + target);
+                throw new Exception("Encountered an unsupported target to pass to OpenFL: " + target);
             }
         }
 
@@ -160,7 +160,7 @@ public final class NMECompiler {
             list.addAll(
                 getStandardArgumentsList(nmml, targetString, buildDir, appMain, appFile, additionalArguments)
             );
-            BufferedReader br = nme.executeIntoBuffer(list);
+            BufferedReader br = openfl.executeIntoBuffer(list);
             String line;
             while ((line = br.readLine()) != null) {
                 hxmlOutput.add(line);
@@ -174,10 +174,10 @@ public final class NMECompiler {
         List<String> list = new ArrayList<String>();
         list.add(command);
         list.addAll(arguments);
-        int returnValue = nme.execute(list, logger);
+        int returnValue = openfl.execute(list, logger);
 
         if (returnValue > 0) {
-            throw new Exception("NME compiler encountered an error and cannot proceed.");
+            throw new Exception("OpenFL compiler encountered an error and cannot proceed.");
         }
     }
 
@@ -185,7 +185,7 @@ public final class NMECompiler {
     {
         File nmmlFile = new File(nmml);
         if (!nmmlFile.exists()) {
-            throw new Exception("Unable to build using NME. NMML file '" + nmml + "' does not exist.");
+            throw new Exception("Unable to build using OpenFL. NMML file '" + nmml + "' does not exist.");
         }
         return nmmlFile;
     }

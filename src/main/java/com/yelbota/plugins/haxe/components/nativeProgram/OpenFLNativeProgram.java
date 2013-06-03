@@ -30,8 +30,8 @@ import java.util.Set;
 import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
-@Component(role = NativeProgram.class, hint = "nme")
-public final class NMENativeProgram extends AbstractNativeProgram {
+@Component(role = NativeProgram.class, hint = "openfl")
+public final class OpenFLNativeProgram extends AbstractNativeProgram {
 
     @Requirement(hint = "haxe")
     private NativeProgram haxe;
@@ -62,7 +62,7 @@ public final class NMENativeProgram extends AbstractNativeProgram {
 	}
 
     @Override
-    protected String myName() { return "nme"; }
+    protected String myName() { return "openfl"; }
 
 	@Override
     protected File getUnpackDirectoryForArtifact(Artifact artifact) throws NativeProgramException
@@ -75,11 +75,11 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     {
         List<String> list = new ArrayList<String>();
 
-        // run NME via haxelib
+        // run OpenFL via haxelib
         File executable = new File(haxelib.getInstalledPath(), isWindows() ? "haxelib.exe" : "haxelib");
         list.add(executable.getAbsolutePath());
         list.add("run");
-        list.add("nme");
+        list.add("openfl");
         list.addAll(arguments);
 
         return list;
@@ -90,7 +90,7 @@ public final class NMENativeProgram extends AbstractNativeProgram {
     {
     	String haxeHome = haxe.getInstalledPath();
     	String nekoHome = neko.getInstalledPath();
-    	String nmeHome = getInstalledPath();
+    	String openflHome = getInstalledPath();
         String[] env = new String[]{
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,
@@ -98,7 +98,7 @@ public final class NMENativeProgram extends AbstractNativeProgram {
                 "LD_LIBRARY_PATH=" + nekoHome + ":.",
                 "HAXE_LIBRARY_PATH=" + haxeHome + "/std:.",
                 "HAXE_STD_PATH=" + haxeHome + "/std:.",
-                "NMEPATH=" + nmeHome,
+                "OPENFLPATH=" + openflHome,
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };

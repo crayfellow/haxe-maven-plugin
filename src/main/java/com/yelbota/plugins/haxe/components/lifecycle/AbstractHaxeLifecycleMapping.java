@@ -64,11 +64,11 @@ public abstract class AbstractHaxeLifecycleMapping
         lifecycleMap.put( "default", lifecycle );
 
         lifecycle = new Lifecycle();
-        lifecycle.setId( "buildNME" );
+        lifecycle.setId( "buildOpenFL" );
         phases = new LinkedHashMap<String, String>();
 
         lifecycle.setPhases( phases );
-        lifecycleMap.put( "buildNME", lifecycle );
+        lifecycleMap.put( "buildOpenFL", lifecycle );
 
         return lifecycleMap;
     }

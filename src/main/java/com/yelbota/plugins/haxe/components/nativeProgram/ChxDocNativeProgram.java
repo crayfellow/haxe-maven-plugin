@@ -100,7 +100,7 @@ public final class ChxDocNativeProgram extends AbstractNativeProgram {
     {
     	String haxeHome = haxe.getInstalledPath();
     	String nekoHome = neko.getInstalledPath();
-    	String nmeHome = getInstalledPath();
+    	String openflHome = getInstalledPath();
         String[] env = new String[]{
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,
@@ -108,7 +108,7 @@ public final class ChxDocNativeProgram extends AbstractNativeProgram {
                 "LD_LIBRARY_PATH=" + nekoHome + ":.",
                 "HAXE_LIBRARY_PATH=" + haxeHome + "/std:.",
                 "HAXE_STD_PATH=" + haxeHome + "/std:.",
-                "NMEPATH=" + nmeHome,
+                "OPENFLPATH=" + openflHome,
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };

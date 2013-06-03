@@ -15,7 +15,7 @@
  */
 package com.yelbota.plugins.haxe;
 
-import com.yelbota.plugins.haxe.components.NMECompiler;
+import com.yelbota.plugins.haxe.components.OpenFLCompiler;
 import com.yelbota.plugins.haxe.utils.CompileTarget;
 import com.yelbota.plugins.haxe.utils.HarMetadata;
 import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
@@ -111,9 +111,9 @@ public class CompileHarMojo extends AbstractCompileMojo {
     {
         if (!outputBase.exists()) outputBase.mkdirs();
 
-        if (nmeIsActive()) {
-            nmeCompiler.initialize(debug, verbose);
-            nmeCompiler.compile(project, targets, nmml, compilerFlags, null, null, true);
+        if (openflIsActive()) {
+            openflCompiler.initialize(debug, verbose);
+            openflCompiler.compile(project, targets, nmml, compilerFlags, null, null, true);
         } else {
             EnumMap<CompileTarget, String> compileTargets = new EnumMap<CompileTarget, String>(CompileTarget.class);
 

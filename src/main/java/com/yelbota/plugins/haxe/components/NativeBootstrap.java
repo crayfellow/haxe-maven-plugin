@@ -64,8 +64,8 @@ public class NativeBootstrap {
     @Requirement(hint = "haxelib")
     private HaxelibNativeProgram haxelib;
 
-    @Requirement(hint = "nme")
-    private NativeProgram nme;
+    @Requirement(hint = "openfl")
+    private NativeProgram openfl;
 
     @Requirement(hint = "munit")
     private NativeProgram munit;
@@ -148,11 +148,11 @@ public class NativeBootstrap {
 
             if (artifactKey.equals(HAXE_COMPILER_KEY) 
                 || artifactKey.equals(NEKO_KEY)
-                || artifactKey.equals(NME_KEY))
+                || artifactKey.equals(OPENFL_KEY))
             {
             /*    String classifier = OSClassifiers.getDefaultClassifier();
                 String packaging = PackageTypes.getSDKArtifactPackaging(classifier);
-                if (artifactKey.equals(NME_KEY)) classifier = null;
+                if (artifactKey.equals(OPENFL_KEY)) classifier = null;
 
                 Artifact artifact = repositorySystem.createArtifactWithClassifier(
                         dependency.getGroupId(), 
@@ -270,21 +270,21 @@ public class NativeBootstrap {
             }
         }
 
-        if (artifactsMap.get(NME_KEY) != null) {
+        if (artifactsMap.get(OPENFL_KEY) != null) {
             if (projectDependencies != null) {
                 iterator = projectDependencies.iterator();
                 while(iterator.hasNext()) {
                     Artifact a = iterator.next();
                     if (a.getType().equals(HaxeFileExtensions.HAXELIB)
-                        && a.getArtifactId().equals("nme")
+                        && a.getArtifactId().equals("openfl")
                         && (a.getVersion() == null 
                             || a.getVersion().equals("")
-                            || a.getVersion().equals(artifactsMap.get(NME_KEY).getVersion()))) {
+                            || a.getVersion().equals(artifactsMap.get(OPENFL_KEY).getVersion()))) {
                         iterator.remove();
                     }
                 }
             }
-            nme.initialize(artifactsMap.get(NME_KEY), outputDirectory, pluginHome, path);
+            openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path);
         }
     }
     
@@ -361,7 +361,7 @@ public class NativeBootstrap {
 
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
-    private static final String NME_KEY = "org.haxenme:nme";
+    private static final String OPENFL_KEY = "org.openfl:openfl";
     private static final String MUNIT_ID = "munit";
     private static final String CHXDOC_ID = "chxdoc";
 

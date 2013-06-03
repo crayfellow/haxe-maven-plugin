@@ -47,8 +47,8 @@ public class DocMojo extends AbstractCompileMojo {
         try
         {
 	        if (nmml != null) {
-                nmeCompiler.initialize(debug, verbose, true);
-	            nmeCompiler.compile(project, targets, nmml, compilerFlags);
+                openflCompiler.initialize(debug, verbose, true);
+	            openflCompiler.compile(project, targets, nmml, compilerFlags);
 	        }
         }
         catch (Exception e)

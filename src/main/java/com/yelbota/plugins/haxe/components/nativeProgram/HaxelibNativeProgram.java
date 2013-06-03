@@ -98,7 +98,7 @@ public final class HaxelibNativeProgram extends AbstractNativeProgram {
     {
         String haxeHome = haxe.getInstalledPath();
         String nekoHome = neko.getInstalledPath();
-        String nmeHome = getInstalledPath();
+        String openflHome = getInstalledPath();
         String[] env = new String[]{
                 "HAXEPATH=" + haxeHome,
                 "NEKOPATH=" + nekoHome,

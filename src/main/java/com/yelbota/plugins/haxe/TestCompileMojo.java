@@ -113,15 +113,15 @@ public class TestCompileMojo extends AbstractCompileMojo {
 
         if (munitCompiler.getHasRequirements()) {
 
-            if (nmeIsActive() && testTargets != null && testClasspath != null) {
-                String logInfo = "Compiling tests for MassiveUnit using NME ";
+            if (openflIsActive() && testTargets != null && testClasspath != null) {
+                String logInfo = "Compiling tests for MassiveUnit using OpenFL ";
                 logInfo += (testCoverage ? "WITH code coverage" : "WITHOUT code coverage") + ".";
                 getLog().info(logInfo);
 
                 Set<String> classPaths = new HashSet<String>();
                 String cleanClassPathList = "";
                 try {
-                    List<String> displayHxml = nmeCompiler.displayHxml(project, testTargets.iterator().next(), nmml, null, null, null);
+                    List<String> displayHxml = openflCompiler.displayHxml(project, testTargets.iterator().next(), nmml, null, null, null);
                     for (String line : displayHxml) {
                         String classPath = StringUtils.substringAfter(line, "-cp ");
                         if (classPath.length() > 0) {
@@ -169,7 +169,7 @@ public class TestCompileMojo extends AbstractCompileMojo {
                         testHxml = TEST_HXML;
                     }
 
-                    List<String> displayHxml = nmeCompiler.displayHxml(project, testTargets, nmml, compilerFlags, testMain, testRunner);
+                    List<String> displayHxml = openflCompiler.displayHxml(project, testTargets, nmml, compilerFlags, testMain, testRunner);
 
                     String hxmlDump = "";
                     for (String hxmlLine : displayHxml) {
@@ -208,8 +208,8 @@ public class TestCompileMojo extends AbstractCompileMojo {
                         hxmlFile.getAbsolutePath(),
                         testResources,
                         testTemplates);
-                    nmeCompiler.initialize(debug, verbose);
-                    nmeCompiler.compile(project, testTargets, nmml, compilerFlags, testMain, testRunner, true);
+                    openflCompiler.initialize(debug, verbose);
+                    openflCompiler.compile(project, testTargets, nmml, compilerFlags, testMain, testRunner, true);
                 }
                 catch (Exception e)
                 {

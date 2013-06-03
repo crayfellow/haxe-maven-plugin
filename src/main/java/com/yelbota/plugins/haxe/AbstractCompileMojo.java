@@ -18,7 +18,7 @@ package com.yelbota.plugins.haxe;
 import com.yelbota.plugins.haxe.components.HaxeCompiler;
 import com.yelbota.plugins.haxe.components.NativeBootstrap;
 import com.yelbota.plugins.haxe.components.HaxeCompiler;
-import com.yelbota.plugins.haxe.components.NMECompiler;
+import com.yelbota.plugins.haxe.components.OpenFLCompiler;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -69,7 +69,7 @@ public abstract class AbstractCompileMojo extends AbstractHaxeMojo {
     protected HaxeCompiler compiler;
 
     @Component
-    protected NMECompiler nmeCompiler;
+    protected OpenFLCompiler openflCompiler;
 
     @Parameter(required = false)
     protected List<String> compilerFlags;
@@ -86,12 +86,12 @@ public abstract class AbstractCompileMojo extends AbstractHaxeMojo {
         super.execute();
 
         compiler.setOutputDirectory(outputDirectory);
-        if (nmeIsActive()) {
-            nmeCompiler.setOutputDirectory(outputDirectory);
+        if (openflIsActive()) {
+            openflCompiler.setOutputDirectory(outputDirectory);
         }
     }
 
-    protected boolean nmeIsActive()
+    protected boolean openflIsActive()
     {
         return nmml != null;
     }
@@ -99,7 +99,7 @@ public abstract class AbstractCompileMojo extends AbstractHaxeMojo {
     @Override
     protected void initialize(MavenProject project, ArtifactRepository localRepository) throws Exception
     {
-        if (nmeIsActive()) {
+        if (openflIsActive()) {
             File nmmlFile = new File(outputDirectory.getParentFile(), nmml);
             if (nmmlFile.exists()) {
                 nmml = nmmlFile.getAbsolutePath();
