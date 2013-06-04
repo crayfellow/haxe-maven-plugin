@@ -35,6 +35,7 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
@@ -148,7 +149,7 @@ public class NativeBootstrap {
 
             if (artifactKey.equals(HAXE_COMPILER_KEY) 
                 || artifactKey.equals(NEKO_KEY)
-                || artifactKey.equals(OPENFL_KEY))
+                || StringUtils.startsWith(artifactKey, OPENFL_KEY))
             {
             /*    String classifier = OSClassifiers.getDefaultClassifier();
                 String packaging = PackageTypes.getSDKArtifactPackaging(classifier);
@@ -270,20 +271,27 @@ public class NativeBootstrap {
             }
         }
 
-        if (artifactsMap.get(OPENFL_KEY) != null) {
-            if (projectDependencies != null) {
-                iterator = projectDependencies.iterator();
-                while(iterator.hasNext()) {
-                    Artifact a = iterator.next();
-                    if (a.getType().equals(HaxeFileExtensions.HAXELIB)
-                        && a.getArtifactId().equals("openfl")
-                        && (a.getVersion() == null 
-                            || a.getVersion().equals("")
-                            || a.getVersion().equals(artifactsMap.get(OPENFL_KEY).getVersion()))) {
-                        iterator.remove();
+        Iterator<String> mapIterator = artifactsMap.keySet().iterator();
+        while (mapIterator.hasNext()) {
+            String key = mapIterator.next();
+            if (StringUtils.startsWith(key, OPENFL_KEY)) {
+                if (projectDependencies != null) {
+                    iterator = projectDependencies.iterator();
+                    while(iterator.hasNext()) {
+                        Artifact a = iterator.next();
+                        if (a.getType().equals(HaxeFileExtensions.HAXELIB)
+                            && StringUtils.startsWith(a.getArtifactId(), OPENFL_ARTIFACT_ID_PREFIX)
+                            && (a.getVersion() == null 
+                                || a.getVersion().equals("")
+                                || a.getVersion().equals(artifactsMap.get(key).getVersion()))) {
+                            iterator.remove();
+                        }
                     }
                 }
             }
+        }
+
+        if (artifactsMap.get(OPENFL_KEY) != null) {
             openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path);
         }
     }
@@ -361,7 +369,8 @@ public class NativeBootstrap {
 
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
-    private static final String OPENFL_KEY = "org.openfl:openfl";
+    private static final String OPENFL_ARTIFACT_ID_PREFIX = "openfl";
+    private static final String OPENFL_KEY = "org.openfl:" + OPENFL_ARTIFACT_ID_PREFIX;
     private static final String MUNIT_ID = "munit";
     private static final String CHXDOC_ID = "chxdoc";
 
