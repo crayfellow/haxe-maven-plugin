@@ -47,10 +47,10 @@ import java.util.List;
 @Mojo(name = "compileOpenFL", defaultPhase = LifecyclePhase.COMPILE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class CompileOpenFLMojo extends AbstractCompileMojo {
 
-    @Parameter(required = true)
+    @Parameter(required = false)
     protected String buildCommandLineHxml;
 
-    @Parameter(required = true)
+    @Parameter(required = false)
     protected String buildRunScriptHxml;
 
     @Override
@@ -60,32 +60,42 @@ public class CompileOpenFLMojo extends AbstractCompileMojo {
 
         File hxml;
 
-        hxml = new File(buildCommandLineHxml);
-        if (hxml.exists()) {
-            try
-            {
-                compiler.compileHxml(project, hxml, hxml.getParentFile());
-            }
-            catch (Exception e)
-            {
-                throw new MojoFailureException("Command line build failed ", e);
+        if (buildCommandLineHxml != null) {
+            getLog().debug("Building OpenFL command line tools.");
+            hxml = new File(buildCommandLineHxml);
+            if (hxml.exists()) {
+                try
+                {
+                    compiler.compileHxml(project, hxml, hxml.getParentFile());
+                }
+                catch (Exception e)
+                {
+                    throw new MojoFailureException("Command line build failed ", e);
+                }
+            } else {
+                throw new MojoFailureException("hxml file '"+buildCommandLineHxml+"' does not exist!");
             }
         } else {
-            throw new MojoFailureException("hxml file '"+buildCommandLineHxml+"' does not exist!");
+            getLog().info("Not building OpenFL command line tools.");
         }
 
-        hxml = new File(buildRunScriptHxml);
-        if (hxml.exists()) {
-            try
-            {
-                compiler.compileHxml(project, hxml, hxml.getParentFile());
-            }
-            catch (Exception e)
-            {
-                throw new MojoFailureException("Run script build failed ", e);
+        if (buildCommandLineHxml != null) {
+            getLog().debug("Building OpenFL run script.");
+            hxml = new File(buildRunScriptHxml);
+            if (hxml.exists()) {
+                try
+                {
+                    compiler.compileHxml(project, hxml, hxml.getParentFile());
+                }
+                catch (Exception e)
+                {
+                    throw new MojoFailureException("Run script build failed ", e);
+                }
+            } else {
+                throw new MojoFailureException("hxml file '"+buildRunScriptHxml+"' does not exist!");
             }
         } else {
-            throw new MojoFailureException("hxml file '"+buildRunScriptHxml+"' does not exist!");
+            getLog().info("Not building OpenFL run script.");
         }
     }
 
