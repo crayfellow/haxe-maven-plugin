@@ -16,6 +16,7 @@
 package com.yelbota.plugins.haxe.components;
 
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
+import com.yelbota.plugins.haxe.components.nativeProgram.OpenFLNativeProgram;
 import com.yelbota.plugins.haxe.utils.CompileTarget;
 import com.yelbota.plugins.haxe.utils.HarMetadata;
 import com.yelbota.plugins.haxe.utils.HaxeFileExtensions;
@@ -41,7 +42,7 @@ public final class OpenFLCompiler {
     private static final String TYPES_FILE = "types.xml";
 
     @Requirement(hint = "openfl")
-    private NativeProgram openfl;
+    private OpenFLNativeProgram openfl;
 
     @Requirement(hint = "chxdoc")
     private NativeProgram chxdoc;
