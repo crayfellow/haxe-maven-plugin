@@ -21,6 +21,7 @@ import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.utils.PackageTypes;
 import com.yelbota.plugins.haxe.utils.OSClassifiers;
 import com.yelbota.plugins.haxe.components.nativeProgram.HaxelibNativeProgram;
+import com.yelbota.plugins.haxe.components.nativeProgram.OpenFLNativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgram;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 import org.apache.maven.artifact.Artifact;
@@ -66,7 +67,7 @@ public class NativeBootstrap {
     private HaxelibNativeProgram haxelib;
 
     @Requirement(hint = "openfl")
-    private NativeProgram openfl;
+    private OpenFLNativeProgram openfl;
 
     @Requirement(hint = "munit")
     private NativeProgram munit;
@@ -292,7 +293,12 @@ public class NativeBootstrap {
         }
 
         if (artifactsMap.get(OPENFL_KEY) != null) {
-            openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path);
+            File nmeDirectory = null;
+            Artifact nmeArtifact = artifactsMap.get(NME_KEY);
+            if (nmeArtifact != null) {
+                nmeDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(nmeArtifact.getArtifactId(), nmeArtifact.getVersion());
+            }
+            openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path, nmeDirectory);
         }
     }
     
@@ -369,6 +375,7 @@ public class NativeBootstrap {
 
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
+    private static final String NME_KEY = "org.haxenme:nme";
     private static final String OPENFL_ARTIFACT_ID_PREFIX = "openfl";
     private static final String OPENFL_KEY = "org.openfl:" + OPENFL_ARTIFACT_ID_PREFIX;
     private static final String MUNIT_ID = "munit";

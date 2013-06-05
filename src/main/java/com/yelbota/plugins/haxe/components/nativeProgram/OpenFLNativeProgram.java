@@ -19,6 +19,8 @@ import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.StringUtils;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import org.apache.maven.artifact.Artifact;
 
 import java.io.File;
@@ -30,7 +32,7 @@ import java.util.Set;
 import com.yelbota.plugins.haxe.utils.HaxelibHelper;
 import com.yelbota.plugins.haxe.components.nativeProgram.NativeProgramException;
 
-@Component(role = NativeProgram.class, hint = "openfl")
+@Component(role = OpenFLNativeProgram.class, hint = "openfl")
 public final class OpenFLNativeProgram extends AbstractNativeProgram {
 
     @Requirement(hint = "haxe")
@@ -41,6 +43,14 @@ public final class OpenFLNativeProgram extends AbstractNativeProgram {
 
     @Requirement(hint = "haxelib")
     private HaxelibNativeProgram haxelib;
+
+    private File nmeDirectory;
+
+    public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path, File nmeDirectory)
+    {
+        this.nmeDirectory = nmeDirectory;
+        initialize(artifact, outputDirectory, pluginHome, path);
+    }
 
     @Override
     public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path)
@@ -102,6 +112,9 @@ public final class OpenFLNativeProgram extends AbstractNativeProgram {
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
                 "HOME=" + pluginHome.getAbsolutePath()
         };
+        if (this.nmeDirectory != null) {
+            env = ArrayUtils.add(env, "NMEPATH=" + nmeDirectory.getAbsolutePath());
+        }
 
         return env;
     }
