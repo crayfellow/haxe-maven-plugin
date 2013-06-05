@@ -67,7 +67,8 @@ public final class HaxeCompiler {
         String line = null;
         while ((line = reader.readLine()) != null) {
             haxelibToInstall = StringUtils.substringAfter(line, "-lib ");
-            if (haxelibToInstall.length() > 0) {
+            if (!StringUtils.startsWith(line, "#")
+                    && haxelibToInstall.length() > 0) {
                 haxelibsToInstall.add(haxelibToInstall);
             }
         }
