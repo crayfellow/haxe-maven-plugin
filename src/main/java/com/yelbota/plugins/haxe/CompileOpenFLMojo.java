@@ -61,7 +61,7 @@ public class CompileOpenFLMojo extends AbstractCompileMojo {
         File hxml;
 
         if (buildCommandLineHxml != null) {
-            getLog().debug("Building OpenFL command line tools.");
+            getLog().info("Building OpenFL command line tools.");
             hxml = new File(buildCommandLineHxml);
             if (hxml.exists()) {
                 try
@@ -80,7 +80,7 @@ public class CompileOpenFLMojo extends AbstractCompileMojo {
         }
 
         if (buildRunScriptHxml != null) {
-            getLog().debug("Building OpenFL run script.");
+            getLog().info("Building OpenFL run script.");
             hxml = new File(buildRunScriptHxml);
             if (hxml.exists()) {
                 try
