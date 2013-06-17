@@ -150,6 +150,7 @@ public class NativeBootstrap {
 
             if (artifactKey.equals(HAXE_COMPILER_KEY) 
                 || artifactKey.equals(NEKO_KEY)
+                || artifactKey.equals(NME_KEY)
                 || StringUtils.startsWith(artifactKey, OPENFL_KEY))
             {
             /*    String classifier = OSClassifiers.getDefaultClassifier();
@@ -289,14 +290,29 @@ public class NativeBootstrap {
                         }
                     }
                 }
+                // inject all openfl accessory libs
+                Artifact a = artifactsMap.get(key);
+                Artifact resolvedArtifact = resolveArtifact(a, false);
+                if (resolvedArtifact != null && resolvedArtifact.getFile() != null) {
+                    HaxelibHelper.injectPomHaxelib(
+                        a.getArtifactId(),
+                        a.getVersion(),
+                        a.getType(),
+                        a.getFile(),
+                        logger
+                    );
+                }
             }
         }
 
         if (artifactsMap.get(OPENFL_KEY) != null) {
             File nmeDirectory = null;
             Artifact nmeArtifact = artifactsMap.get(NME_KEY);
+            logger.info("checking for '"+NME_KEY+"': " + nmeArtifact);
             if (nmeArtifact != null) {
                 nmeDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(nmeArtifact.getArtifactId(), nmeArtifact.getVersion());
+                     
+                logger.info("checking for '"+NME_KEY+" dir': " + nmeDirectory);
             }
             openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path, nmeDirectory);
         }
