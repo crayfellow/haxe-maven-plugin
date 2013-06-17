@@ -309,13 +309,17 @@ public class NativeBootstrap {
         if (artifactsMap.get(OPENFL_KEY) != null) {
             File nmeDirectory = null;
             Artifact nmeArtifact = artifactsMap.get(NME_KEY);
-            logger.info("checking for '"+NME_KEY+"': " + nmeArtifact);
             if (nmeArtifact != null) {
                 nmeDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(nmeArtifact.getArtifactId(), nmeArtifact.getVersion());
-                     
-                logger.info("checking for '"+NME_KEY+" dir': " + nmeDirectory);
             }
-            openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path, nmeDirectory);
+
+            File openflNativeDirectory = null;
+            Artifact openflNativeArtifact = artifactsMap.get(OPENFL_ARTIFACT_ID_PREFIX + OPENFL_NATIVE_SUFFIX);
+            if (openflNativeArtifact != null) {
+                openflNativeDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(openflNativeArtifact.getArtifactId(), openflNativeArtifact.getVersion());
+            }
+
+            openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path, nmeDirectory, openflNativeDirectory);
         }
     }
     
@@ -394,6 +398,7 @@ public class NativeBootstrap {
     private static final String NEKO_KEY = "org.nekovm:nekovm";
     private static final String NME_KEY = "org.haxenme:nme";
     private static final String OPENFL_ARTIFACT_ID_PREFIX = "openfl";
+    private static final String OPENFL_NATIVE_SUFFIX = "-native";
     private static final String OPENFL_KEY = "org.openfl:" + OPENFL_ARTIFACT_ID_PREFIX;
     private static final String MUNIT_ID = "munit";
     private static final String CHXDOC_ID = "chxdoc";

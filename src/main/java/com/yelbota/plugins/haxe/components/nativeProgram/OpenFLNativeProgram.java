@@ -20,6 +20,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.util.StringUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.io.FileUtils;
 
 import org.apache.maven.artifact.Artifact;
 
@@ -46,10 +47,32 @@ public final class OpenFLNativeProgram extends AbstractNativeProgram {
 
     private File nmeDirectory;
 
-    public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path, File nmeDirectory)
+    public void initialize(Artifact artifact, File outputDirectory, File pluginHome, Set<String> path, File nmeDirectory, File openflNativeDirectory)
     {
-        this.nmeDirectory = nmeDirectory;
+        if (nmeDirectory != null && nmeDirectory.exists()) {
+            this.nmeDirectory = nmeDirectory;
+        }
         initialize(artifact, outputDirectory, pluginHome, path);
+
+        if (this.nmeDirectory != null
+                && openflNativeDirectory != null && openflNativeDirectory.exists()) {
+            logger.info("exists: " + nmeDirectory);
+            File nmeNDLLDirectory = new File(nmeDirectory, "ndll");
+            File openflNDLLDirectory = new File(openflNativeDirectory, "ndll");
+
+            /*for (String fileName : nmeNDLLDirectory.list())
+            {
+                File ndllDirectory = new File(nmeNDLLDirectory, fileName);
+                if (ndllDirectory.isDirectory()) {
+                    FileUtils.copyDirectory(ndllDirectory);
+                }
+            }*/
+            try {
+                FileUtils.copyDirectory(nmeNDLLDirectory, openflNDLLDirectory);
+            } catch (IOException e) {
+                logger.error("Unable to copy NDLL files from NME to OpenFL Native");
+            }
+        }
     }
 
     @Override
