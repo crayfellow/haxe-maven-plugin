@@ -276,7 +276,8 @@ public class NativeBootstrap {
         Iterator<String> mapIterator = artifactsMap.keySet().iterator();
         while (mapIterator.hasNext()) {
             String key = mapIterator.next();
-            if (StringUtils.startsWith(key, OPENFL_KEY)) {
+            if (key.equals(NME_KEY)
+                    || StringUtils.startsWith(key, OPENFL_KEY)) {
                 if (projectDependencies != null) {
                     iterator = projectDependencies.iterator();
                     while(iterator.hasNext()) {
