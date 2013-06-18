@@ -314,7 +314,7 @@ public class NativeBootstrap {
             }
 
             File openflNativeDirectory = null;
-            Artifact openflNativeArtifact = artifactsMap.get(OPENFL_ARTIFACT_ID_PREFIX + OPENFL_NATIVE_SUFFIX);
+            Artifact openflNativeArtifact = artifactsMap.get(OPENFL_GROUP + OPENFL_ARTIFACT_ID_PREFIX + OPENFL_NATIVE_SUFFIX);
             if (openflNativeArtifact != null) {
                 openflNativeDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(openflNativeArtifact.getArtifactId(), openflNativeArtifact.getVersion());
             }
@@ -399,7 +399,8 @@ public class NativeBootstrap {
     private static final String NME_KEY = "org.haxenme:nme";
     private static final String OPENFL_ARTIFACT_ID_PREFIX = "openfl";
     private static final String OPENFL_NATIVE_SUFFIX = "-native";
-    private static final String OPENFL_KEY = "org.openfl:" + OPENFL_ARTIFACT_ID_PREFIX;
+    private static final String OPENFL_GROUP = "org.openfl:";
+    private static final String OPENFL_KEY = OPENFL_GROUP + OPENFL_ARTIFACT_ID_PREFIX;
     private static final String MUNIT_ID = "munit";
     private static final String CHXDOC_ID = "chxdoc";
 

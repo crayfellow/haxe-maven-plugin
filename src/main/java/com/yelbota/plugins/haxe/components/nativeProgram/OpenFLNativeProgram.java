@@ -56,7 +56,6 @@ public final class OpenFLNativeProgram extends AbstractNativeProgram {
 
         if (this.nmeDirectory != null
                 && openflNativeDirectory != null && openflNativeDirectory.exists()) {
-            logger.info("exists: " + nmeDirectory);
             File nmeNDLLDirectory = new File(nmeDirectory, "ndll");
             File openflNDLLDirectory = new File(openflNativeDirectory, "ndll");
 
@@ -133,7 +132,7 @@ public final class OpenFLNativeProgram extends AbstractNativeProgram {
                 "HAXE_STD_PATH=" + haxeHome + "/std:.",
                 "OPENFLPATH=" + openflHome,
                 "PATH=" + StringUtils.join(path.iterator(), ":"),
-                "OPENFL_LOAD_DEBUG=1",
+                /*"OPENFL_LOAD_DEBUG=1",*/
                 "HOME=" + pluginHome.getAbsolutePath()
         };
         if (this.nmeDirectory != null) {
