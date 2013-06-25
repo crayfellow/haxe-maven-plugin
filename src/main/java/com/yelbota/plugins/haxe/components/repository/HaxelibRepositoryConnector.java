@@ -190,22 +190,24 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                     artifactFile.getParentFile().mkdirs();
                 }
                 artifactFile.createNewFile();
+                String version = HaxelibHelper.getSnapshotVersionForHaxelibArtifact(artifact.getVersion());
 
                 FileWriter fileWriter = new FileWriter(artifactFile);
                 String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                    "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
-                    "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
-                    "         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">" +
-                    "  <modelVersion>4.0.0</modelVersion>" +
-                    "" +
-                    "  <groupId>org.haxe.lib</groupId>" +
-                    "  <artifactId>lib</artifactId>" +
-                    "  <version>1.0</version>" +
-                    "" +
-                    "  <packaging>pom</packaging>" +
-                    "" +
-                    "  <name>lib</name>" +
-                    "</project>";
+                    "\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\"" +
+                    "\n         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                    "\n         xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">" +
+                    "\n  <modelVersion>4.0.0</modelVersion>" +
+                    "\n" +
+                    "\n  <groupId>" + artifact.getGroupId() + "</groupId>" +
+                    "\n  <artifactId>" + artifact.getArtifactId() + "</artifactId>" +
+                    "\n  <version>" + version + "</version>" +
+                    "\n" +
+                    "\n  <packaging>" + PackageTypes.ZIP + "</packaging>" +
+                    "\n" +
+                    "\n  <name>" + artifact.getArtifactId() + "</name>" +
+                    "\n</project>" +
+                    "\n";
                 fileWriter.write(content);
                 fileWriter.close();
             }

@@ -27,12 +27,12 @@ public class PackageTypes {
     @Nonnull
     public static final String getSDKArtifactPackaging(String classifier)
     {
-        if (classifier.equals(OSClassifiers.WINDOWS))
-        {
+        /*if (classifier.equals(OSClassifiers.WINDOWS))
+        {*/
             return PackageTypes.ZIP;
-        } else
+        /*} else
         {
             return PackageTypes.TGZ;
-        }
+        }*/
     }
 }

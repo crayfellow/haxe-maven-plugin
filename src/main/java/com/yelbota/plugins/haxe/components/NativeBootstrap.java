@@ -366,10 +366,11 @@ public class NativeBootstrap {
 
         if (!resolutionResult.isSuccess())
         {
-            if (artifact.getType().equals(PackageTypes.TGZ)) {
+            String expectedPackageType = PackageTypes.ZIP;
+            if (artifact.getType().equals(expectedPackageType)) {
                 artifact = repositorySystem.createArtifactWithClassifier(
                         artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
-                        PackageTypes.TARGZ, artifact.getClassifier());
+                        expectedPackageType, artifact.getClassifier());
                 request = new ArtifactResolutionRequest();
                 request.setArtifact(artifact);
                 request.setLocalRepository(localRepository);

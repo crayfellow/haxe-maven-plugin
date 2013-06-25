@@ -45,6 +45,11 @@ public class HaxelibHelper {
         return version.replaceAll("-(.*)$", "");
     }
 
+    public static String getSnapshotVersionForHaxelibArtifact(String version)
+    {
+        return version.replaceAll("-(.*)$", "-SNAPSHOT");
+    }
+
     public static final File getHaxelibDirectoryForArtifact(String artifactId, String version)
     {
         if (haxelib != null && haxelib.getInitialized()) {
