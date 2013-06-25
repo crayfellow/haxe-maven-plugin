@@ -42,12 +42,12 @@ public class HaxelibHelper {
 
     public static String getCleanVersionForHaxelibArtifact(String version)
     {
-        return version.replaceAll("-(.*)$", "");
+        return version.replaceAll("-\\d+.*$", "");
     }
 
     public static String getSnapshotVersionForHaxelibArtifact(String version)
     {
-        return version.replaceAll("-(.*)$", "-SNAPSHOT");
+        return version.replaceAll("-\\d+.*$", "-SNAPSHOT");
     }
 
     public static final File getHaxelibDirectoryForArtifact(String artifactId, String version)
@@ -84,11 +84,16 @@ public class HaxelibHelper {
         return injectPomHaxelib(artifact.getArtifactId(), artifact.getVersion(), artifact.getExtension(), artifactDownload.getFile(), logger);
     }
 
+    private static String getUniqueLibPath(String name, String version)
+    {
+        return name + "-" + getSnapshotVersionForHaxelibArtifact(version);
+    }
+
     public static File getLibUnpackPath(String name, String version)
     {
         if (haxelib != null) {
             return new File(haxelib.getLibUnpackPath(), 
-                name + "-" + getCleanVersionForHaxelibArtifact(version));
+                getUniqueLibPath(name, version));
         }
         return null;
     }
@@ -120,12 +125,18 @@ public class HaxelibHelper {
                 logger.error(String.format("Can't unpack %s: %s", artifactId, e));
             }
 
-            for (String firstFileName : unpackDir.list())
+            for (String fileName : unpackDir.list())
             {
-                File firstFile = new File(unpackDir, firstFileName);
+                if (artifactType.equals("jar")) {
+                    fileName = getUniqueLibPath(artifactId, artifactVersion);
+                }
+                File firstFile = new File(unpackDir, fileName);
+                logger.info("moving " + firstFile + " to " + libDir);
                 firstFile.renameTo(libDir);
                 break;
             }
+
+            unpackDir.setLastModified(artifactFile.lastModified());
 
             try
             {

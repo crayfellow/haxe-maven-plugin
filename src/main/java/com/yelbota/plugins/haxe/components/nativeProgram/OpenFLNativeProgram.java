@@ -97,7 +97,7 @@ public final class OpenFLNativeProgram extends AbstractNativeProgram {
     protected String myName() { return "openfl"; }
 
 	@Override
-    protected File getUnpackDirectoryForArtifact(Artifact artifact) throws NativeProgramException
+    protected File getDestinationDirectoryForArtifact(Artifact artifact) throws NativeProgramException
     {
         return HaxelibHelper.getHaxelibDirectoryForArtifactAndInitialize(artifact.getArtifactId(), artifact.getVersion(), logger);
     }

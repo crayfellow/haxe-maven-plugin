@@ -316,7 +316,7 @@ public abstract class AbstractNativeProgram implements NativeProgram {
         return initialized;
     }
 
-    protected File getUnpackDirectoryForArtifact(Artifact artifact) throws NativeProgramException
+    protected File getDestinationDirectoryForArtifact(Artifact artifact) throws NativeProgramException
     {
         return new File(pluginHome, getUniqueArtifactPath());
     }
@@ -328,49 +328,52 @@ public abstract class AbstractNativeProgram implements NativeProgram {
 
     private File getDirectory(Artifact artifact) throws Exception
     {
-        File unpackDirectory = getUnpackDirectoryForArtifact(artifact);
+        File destinationDirectory = getDestinationDirectoryForArtifact(artifact);
 
-        if (!unpackDirectory.exists()
-            || artifact.getFile().lastModified() > unpackDirectory.lastModified())
+        if (!destinationDirectory.exists()
+            || artifact.getFile().lastModified() > destinationDirectory.lastModified())
         {
-            if (unpackDirectory.exists()) {
-                FileUtils.deleteQuietly(unpackDirectory);
+            if (destinationDirectory.exists()) {
+                FileUtils.deleteQuietly(destinationDirectory);
             }
-            File tmpDir = new File(outputDirectory, getUniqueArtifactPath() + "-unpack");
+            File unpackDir = new File(outputDirectory, getUniqueArtifactPath() + "-unpack");
 
-            if (tmpDir.exists())
-                FileUtils.deleteQuietly(tmpDir);
+            if (unpackDir.exists())
+                FileUtils.deleteQuietly(unpackDir);
 
             UnpackHelper unpackHelper = new UnpackHelper() {};
             DefaultUnpackMethods unpackMethods = new DefaultUnpackMethods(logger);
-            unpackHelper.unpack(tmpDir, artifact, unpackMethods, null);
+            unpackHelper.unpack(unpackDir, artifact, unpackMethods, null);
 
-            //if (unpackDirectory.exists()) {
-            //    FileUtils.deleteQuietly(unpackDirectory);
-            //}
-            for (String firstFileName : tmpDir.list())
+            for (String fileName : unpackDir.list())
             {
-                File firstFile = new File(tmpDir, firstFileName);
-                //FileUtils.moveDirectory(firstFile, unpackDirectory);
-                firstFile.renameTo(unpackDirectory);
-                if (!unpackDirectory.exists()) {
+                if (artifact.getType().equals("jar")) {
+                    fileName = getUniqueArtifactPath();
+                }
+                File firstFile = new File(unpackDir, fileName);
+                //FileUtils.moveDirectory(firstFile, destinationDirectory);
+                firstFile.renameTo(destinationDirectory);
+                if (!destinationDirectory.exists()) {
                     // manually move using shell call as last ditch
                     Process process = Runtime.getRuntime().exec(
-                            "mv " + firstFile.getAbsolutePath() + " " + unpackDirectory.getAbsolutePath()
+                            "mv " + firstFile.getAbsolutePath() + " " + destinationDirectory.getAbsolutePath()
                     );
                 }
                 break;
             }
 
-            if (tmpDir.exists())
-                FileUtils.deleteQuietly(tmpDir);
+            if (destinationDirectory.exists()) {
+                destinationDirectory.setLastModified(artifact.getFile().lastModified());
+            }
+            if (unpackDir.exists())
+                FileUtils.deleteQuietly(unpackDir);
         }
 
         initialized = true;
-        String directoryPath = unpackDirectory.getAbsolutePath();
+        String directoryPath = destinationDirectory.getAbsolutePath();
         // Add current directory to path
         path.add(directoryPath);
-        return unpackDirectory;
+        return destinationDirectory;
     }
 
     public void setDisplay(String display)
