@@ -203,7 +203,7 @@ public class HaxelibRepositoryConnector implements RepositoryConnector {
                     "\n  <artifactId>" + artifact.getArtifactId() + "</artifactId>" +
                     "\n  <version>" + version + "</version>" +
                     "\n" +
-                    "\n  <packaging>" + PackageTypes.ZIP + "</packaging>" +
+                    "\n  <packaging>" + PackageTypes.DEFAULT + "</packaging>" +
                     "\n" +
                     "\n  <name>" + artifact.getArtifactId() + "</name>" +
                     "\n</project>" +

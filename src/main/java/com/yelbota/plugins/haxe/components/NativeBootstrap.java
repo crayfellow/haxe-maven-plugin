@@ -366,7 +366,7 @@ public class NativeBootstrap {
 
         if (!resolutionResult.isSuccess())
         {
-            String expectedPackageType = PackageTypes.ZIP;
+            String expectedPackageType = PackageTypes.DEFAULT;
             if (artifact.getType().equals(expectedPackageType)) {
                 artifact = repositorySystem.createArtifactWithClassifier(
                         artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),

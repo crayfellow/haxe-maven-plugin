@@ -19,20 +19,22 @@ import javax.annotation.Nonnull;
 
 public class PackageTypes {
 
+    public static final String JAR = "jar";
     public static final String ZIP = "zip";
     public static final String TGZ = "tgz";
     public static final String TARGZ = "tar.gz";
-    public static final String DEFAULT = ZIP;
+    public static final String DEFAULT = JAR;
 
     @Nonnull
     public static final String getSDKArtifactPackaging(String classifier)
     {
         /*if (classifier.equals(OSClassifiers.WINDOWS))
-        {*/
+        {
             return PackageTypes.ZIP;
-        /*} else
+        } else
         {
             return PackageTypes.TGZ;
         }*/
+        return PackageTypes.DEFAULT;
     }
 }
