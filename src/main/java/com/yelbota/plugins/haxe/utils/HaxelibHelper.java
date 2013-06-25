@@ -131,7 +131,6 @@ public class HaxelibHelper {
                     fileName = getUniqueLibPath(artifactId, artifactVersion);
                 }
                 File firstFile = new File(unpackDir, fileName);
-                logger.info("moving " + firstFile + " to " + libDir);
                 firstFile.renameTo(libDir);
                 break;
             }
