@@ -42,7 +42,7 @@ public class HaxelibHelper {
 
     public static String getCleanVersionForHaxelibArtifact(String version)
     {
-        return version.replaceAll("-\\d+.*$", "");
+        return version.replaceAll("-.*$", "");
     }
 
     public static String getSnapshotVersionForHaxelibArtifact(String version)
@@ -63,7 +63,7 @@ public class HaxelibHelper {
 
     public static File getHaxelibDirectoryForArtifactAndInitialize(String artifactId, String version, Logger logger)
     {
-        File haxelibDirectory = HaxelibHelper.getHaxelibDirectoryForArtifact(artifactId, version);
+        File haxelibDirectory = getHaxelibDirectoryForArtifact(artifactId, version);
         if (haxelibDirectory != null) {
             File currentFile = new File(haxelibDirectory.getParentFile(), ".current");
             if (!currentFile.exists()) {
