@@ -182,7 +182,7 @@ public class NativeBootstrap {
                         dependency.getType(),
                         dependency.getClassifier()
                 );
-                Artifact resolvedArtifact = resolveArtifact(artifact, true);
+                Artifact resolvedArtifact = resolveArtifact(artifact, false);
                 if (resolvedArtifact != null) {
                     artifactsMap.put(artifactKey, resolvedArtifact);
                 }
@@ -192,14 +192,14 @@ public class NativeBootstrap {
         if (artifactsMap.get(NEKO_KEY) == null)
         {
             throw new Exception(String.format(
-                    "Neko Runtime dependency (%s) not fount in haxe-maven-plugin dependencies",
+                    "Neko Runtime dependency (%s) not found in haxe-maven-plugin dependencies",
                     NEKO_KEY));
         }
 
         if (artifactsMap.get(HAXE_COMPILER_KEY) == null)
         {
             throw new Exception(String.format(
-                    "Haxe Compiler dependency (%s) not fount in haxe-maven-plugin dependencies",
+                    "Haxe Compiler dependency (%s) not found in haxe-maven-plugin dependencies",
                     HAXE_COMPILER_KEY));
         }
 
