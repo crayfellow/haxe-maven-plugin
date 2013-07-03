@@ -88,7 +88,8 @@ private String myname = "stream";
                         } else if (type == CleanStreamType.DEBUG) {
                             log.debug(line);
                         } else if (type == CleanStreamType.ERROR) {
-                            if (line.matches("(.*)[Ww]arning(.*)")) {
+                            if (line.matches("(.*)[Ww]arning(.*)")
+                                    || !line.matches("(.*)[Ee]rror(.*)")) {
                                 log.warn(line);
                             } else {
                                 log.error("("+myname+") " + line);
