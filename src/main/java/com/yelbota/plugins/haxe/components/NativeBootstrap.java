@@ -69,6 +69,9 @@ public class NativeBootstrap {
     @Requirement(hint = "openfl")
     private OpenFLNativeProgram openfl;
 
+    @Requirement(hint = "hxcpp")
+    private NativeProgram hxcpp;
+
     @Requirement(hint = "munit")
     private NativeProgram munit;
 
@@ -151,6 +154,7 @@ public class NativeBootstrap {
             if (artifactKey.equals(HAXE_COMPILER_KEY) 
                 || artifactKey.equals(NEKO_KEY)
                 || artifactKey.equals(NME_KEY)
+                || artifactKey.equals(HXCPP_KEY)
                 || StringUtils.startsWith(artifactKey, OPENFL_KEY))
             {
             /*    String classifier = OSClassifiers.getDefaultClassifier();
@@ -321,6 +325,11 @@ public class NativeBootstrap {
 
             openfl.initialize(artifactsMap.get(OPENFL_KEY), outputDirectory, pluginHome, path, nmeDirectory, openflNativeDirectory);
         }
+
+        if (artifactsMap.get(HXCPP_KEY) != null) {
+            logger.info("initializing hxcpp");
+            hxcpp.initialize(artifactsMap.get(HXCPP_KEY), outputDirectory, pluginHome, path);
+        }
     }
     
     private void initializeHaxelib(File pluginHome) throws Exception
@@ -398,6 +407,7 @@ public class NativeBootstrap {
     private static final String HAXE_COMPILER_KEY = "org.haxe.compiler:haxe-compiler";
     private static final String NEKO_KEY = "org.nekovm:nekovm";
     private static final String NME_KEY = "org.haxenme:nme";
+    private static final String HXCPP_KEY = "org.haxe.lib:hxcpp";
     private static final String OPENFL_ARTIFACT_ID_PREFIX = "openfl";
     private static final String OPENFL_NATIVE_SUFFIX = "-native";
     private static final String OPENFL_GROUP = "org.openfl:";
