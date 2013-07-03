@@ -30,6 +30,7 @@ import org.codehaus.plexus.archiver.zip.ZipArchiver;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import javax.xml.bind.JAXBContext;
@@ -59,12 +60,24 @@ public class CompileHxcppMojo extends AbstractCompileMojo {
     @Parameter(required = false)
     protected List<String> compilerFlags;
 
+    @Parameter(required = false)
+    protected List<String> cacheFiles;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
         super.execute();
 
         File projectFile;
+
+        if (cacheFiles != null) {
+            File cacheFile;
+            for (String cacheFileName : cacheFiles) {
+                getLog().info("Deleting cache '"+cacheFileName+"'.");
+                cacheFile = new File(cacheFileName);
+                FileUtils.deleteQuietly(cacheFile);
+            }
+        }
 
         if (hxcppProjectFile != null) {
             projectFile = new File(hxcppProjectFile);
@@ -73,7 +86,7 @@ public class CompileHxcppMojo extends AbstractCompileMojo {
                 try
                 {
                     hxcppCompiler.initialize(debug);
-                    hxcppCompiler.compile(project, projectFile, compilerFlags);
+                    hxcppCompiler.compile(project, projectFile, projectFile.getParentFile(), compilerFlags);
                 }
                 catch (Exception e)
                 {

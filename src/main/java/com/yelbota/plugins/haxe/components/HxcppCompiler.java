@@ -39,8 +39,6 @@ import java.util.Set;
 
 @Component(role = HxcppCompiler.class)
 public final class HxcppCompiler {
-    private static final String TYPES_FILE = "types.xml";
-
     @Requirement(hint = "hxcpp")
     private NativeProgram hxcpp;
 
@@ -62,7 +60,7 @@ public final class HxcppCompiler {
         this.debug = debug;
     }
 
-    public void compile(MavenProject project, File projectFile, List<String> additionalArguments) throws Exception
+    public void compile(MavenProject project, File projectFile, File workingDirectory, List<String> additionalArguments) throws Exception
     {
         //haxelib run hxcpp Build.xml -DHXCPP_CLANG -DMACOSX_DEPLOYMENT_TARGET=10.7 -Ddebug
         List<String> args = new ArrayList<String>();
@@ -77,22 +75,17 @@ public final class HxcppCompiler {
             args.add("-Ddebug");
         }
 
-        execute(args);
+        execute(args, workingDirectory);
     }
 
-    private void execute(List<String> arguments) throws Exception
+    private void execute(List<String> arguments, File workingDirectory) throws Exception
     {
         List<String> list = new ArrayList<String>();
         list.addAll(arguments);
-        int returnValue = hxcpp.execute(list, logger);
+        int returnValue = hxcpp.execute(list, workingDirectory, logger);
 
         if (returnValue > 0) {
             throw new Exception("Hxcpp compiler encountered an error and cannot proceed.");
         }
-    }
-
-    public void setOutputDirectory(File outputDirectory)
-    {
-        this.outputDirectory = outputDirectory;
     }
 }
